@@ -5,6 +5,7 @@ const cassandra = require('cassandra-driver');
 const cors = require('cors')
 const bodyParser = require('body-parser');
 var _ = require('lodash');
+var CronJob = require('cron').CronJob;
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -92,6 +93,7 @@ app.post('/api/createkorisnik', function(req, res)
 	});
 	
 });
+
 
 
 app.listen(5000);
