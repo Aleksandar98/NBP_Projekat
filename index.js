@@ -6,6 +6,7 @@ const cors = require('cors')
 const bodyParser = require('body-parser');
 const nodemailer= require('nodemailer');
 var _ = require('lodash');
+var CronJob = require('cron').CronJob;
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -353,5 +354,7 @@ cron.schedule("14 16 * * Wed", async function(){
 //AUTOMATSKO BRISANJE SVIH KOLA KOJA SU STARIJA OD MESEC DANA (STARIJA OD CETVRTOG KOLA)
 //RACUNANJE PROFITA OD KOLA
 
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);
+
