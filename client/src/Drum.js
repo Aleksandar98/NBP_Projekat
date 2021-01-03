@@ -1,20 +1,50 @@
 import React, { Component } from 'react';
 
+
+
+
 class Drum extends Component{
   constructor(props) {
     super(props);
+    this.state = {kombinacija: []};
+  }
 
+  componentDidMount(){
+
+    fetch("http://localhost:5000/vratiKombinaciju")
+    .then(res => res.json())
+    .then(
+      (result) => {
+       this.setState({kombinacija: result})
+        console.log(result)
+         
+      },
+      // Note: it's important to handle errors here
+      // instead of a catch() block so that we don't swallow
+      // exceptions from actual bugs in components.
+      (error) => {
+        console.log(error)
+        /*this.setState({
+          isLoaded: true,
+          error
+        });
+        */
+      }
+    )
   }
   
    napraviSlot(brojSlotova,niz) {
-    const a = []
+
+    let a = [];
     for (let i = 0; i < brojSlotova; i++) {
       a.push(React.createElement('ul',{className:'slot'},this.brojke(niz[i]) ))
     
       }
+      
       return a
+  
   }
-
+ 
 
    brojke(broj) {
     const a = []
@@ -38,19 +68,19 @@ class Drum extends Component{
    pocniOdbrojavanje(onZavrsio) {
     setTimeout(function() { onZavrsio() }, 7000);
   }
-
+  
+ 
     
 
 
 
-  render(){
-    const izvuceni = [ 6 , 24 , 11 , 8 , 11,13,26];
-    console.log()
-
+ render(){
+ 
 return(
     <div className='machine'>
         <div className='slots'>
-        {this.napraviSlot(7,izvuceni)}
+         
+        {this.napraviSlot(7,this.state.kombinacija)}
         {this.pocniOdbrojavanje(this.props.onZavrsio)}
     
       </div>

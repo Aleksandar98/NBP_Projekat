@@ -14,10 +14,31 @@ class Countdown extends Component {
 
   componentDidMount() {
     // update every second
-    this.interval = setInterval(() => {
-      const date = this.calculateCountdown(this.props.date);
-      date ? this.setState(date) : this.stop();
-    }, 1000);
+    fetch("http://localhost:5000/vratiPocetakKola")
+    .then(res => res.json())
+    .then(
+      (result) => {
+      // this.setState({kombinacija: result})
+        console.log(result)
+        this.interval = setInterval(() => {
+          const date = this.calculateCountdown(result);
+          date ? this.setState(date) : this.stop();
+        }, 1000);
+      },
+      // Note: it's important to handle errors here
+      // instead of a catch() block so that we don't swallow
+      // exceptions from actual bugs in components.
+      (error) => {
+        console.log(error)
+        /*this.setState({
+          isLoaded: true,
+          error
+        });
+        */
+      }
+    )
+
+
   }
 
   componentWillUnmount() {
@@ -57,7 +78,7 @@ class Countdown extends Component {
       diff -= timeLeft.min * 60;
     }
     timeLeft.sec = diff;
-
+    console.log("KOLKO CEKAM" + timeLeft.sec)
     return timeLeft;
   }
 
