@@ -50,7 +50,7 @@ app.get('/api/testcassandra', function(req, res)
 {
 	const client = new cassandra.Client({ contactPoints: ['localhost'],localDataCenter:'datacenter1' ,keyspace: 'loto'});
 
-	const query = 'SELECT * FROM "Korisnici"';
+	const query = 'SELECT COUNT(*)  FROM "Korisnici"';
 	client.execute(query, function(err, result) {
 		if(err)
 		{
