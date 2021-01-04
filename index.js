@@ -6,15 +6,14 @@ const cors = require('cors')
 const bodyParser = require('body-parser');
 const nodemailer= require('nodemailer');
 var _ = require('lodash');
-var CronJob = require('cron').CronJob;
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
-const KEYSPACE = 'lotoooooo';
-const client = new cassandra.Client({ contactPoints: ['127.0.0.1'], keyspace: 'lotoooooo', localDataCenter: 'datacenter1' });
+const KEYSPACE = 'loto';
+const client = new cassandra.Client({ contactPoints: ['127.0.0.1'], keyspace: 'loto', localDataCenter: 'datacenter1' });
 
 /*function connectToCassandra(keyspace)
 {
@@ -125,7 +124,7 @@ app.post("/createFirma", function(req,res)
 const cron= require('node-cron');
 let shell= require('shelljs');
 
-cron.schedule("17 01 * * Sun", async function(){
+cron.schedule("58 19 * * Sun", async function(){
 			var today= new Date();	
 			var dd=(today.getDate()).toString().padStart(2,'0');
 			var mm= (today.getMonth() +1).toString().padStart(2,'0');
@@ -242,7 +241,10 @@ app.put("/uplatiKombinaciju", async(req,res)=>{
 	//console.log(idkorisnika);
 	var query1= 'select idkola from "Kolo" limit 1'
 	await client.execute(query1, async function(err,result){
-		let params= [parseInt(result.first()['count']).toString()];
+		//let params= [parseInt(result.first()['count']).toString()];
+		let params= [result.rows[0]['idkola']];
+		console.log(params);
+		console.log(result);
 		var query2= 'SELECT stanje FROM "Kolo" WHERE idkola=?';
 		await client.execute(query2,params, async function(err,result){
 			if(result.rows[0].stanje=="otvoreno"){
@@ -330,22 +332,135 @@ cron.schedule("14 16 * * Wed", async function(){
 	})
 }); 
 
-//LOTO ALGORITAM
 //cron.schedule("* * * * *", async function(){
-	app.post('/test',function(req,res){
-		/*var str = "Abc: Lorem ipsum sit amet";
-		str = str.split(":").pop();
-		console.log(str);*/
-		let str= "3 14 33 37 11 8 29";
-		str= str.split(" ");
-		console.log(str);
-		str.forEach(num=>{
-			console.log(num); //svaki broj izdvojen posebno
+	app.get('/test', async function(req,res){
+		
+		var query1= 'SELECT idkola FROM "Kolo" LIMIT 1';
+		await client.execute(query1,async function(err,result){
+			var params=[result.rows[0]['idkola']];
+			var query2= 'SELECT username FROM "Korisnik"';
+			await client.execute(query2,/*params,*/async function(err,result){
+				var usernames=[];
+				//console.log(result.rows);
+				result.rows.forEach(row=>{
+					usernames.push(row.username);
+				})
+				var kombinacije= [];
+				//console.log(usernames); //radi
+				var query3= 'SELECT '+ usernames + ' FROM "BrojKombinacija_By_Kolo" WHERE idkola= ?';
+				client.execute(query3,params,async function(err,result){
+					//console.log(Object.keys(result.rows[0]));
+					var zaCitanje=[];
+					var keysLenght=Object.keys(result.rows[0]).length;
+					Object.keys(result.rows[0]).forEach((key,ind)=>{
+						var user= key + "_";
+						var tmpuser=user;
+						var count= result.rows[0][key];
+						for(let i=1;i<=count;i++){
+							user+=i;
+							//if(ind!=keysLenght && i!=count)
+								//user+=" ,"
+							zaCitanje.push(user);
+							user=tmpuser;
+						}
+					})
+					//console.log("ok");
+					//console.log(zaCitanje);
+					var query4= "SELECT " + zaCitanje + ' FROM "Kombinacija_By_Kolo" WHERE idkola= ?'
+					client.execute(query4, params, function(err,result){
+						console.log(result.rows[0]);
+						var kombinacije=[];
+						//console.log(Object.keys(result.rows[0]));
+						Object.keys(result.rows[0]).forEach(key=>{
+							//console.log("dodaje se kombinacija ");
+							kombinacije.push(result.rows[0][key]);
+						})
+						//console.log(kombinacije);
+						var brojevi= [];
+						kombinacije.forEach(kombinacija=>{
+							kombinacija= kombinacija.split(" ");
+							//console.log(kombinacija);
+							kombinacija.forEach(broj=>{
+								broj= parseInt(broj);
+								//console.log(broj);
+								brojevi.push(broj);
+							})
+						})
+						//console.log(brojevi);
+						var tablica39=[];
+						for(let i=1;i<=39;i++)
+							tablica39[i]=0;
+						brojevi.forEach(broj=>{
+							tablica39[broj]++;
+						})
+						//console.log(tablica39);
+						var sortiraniObjekti39=[];
+						tablica39.forEach((t,i)=>{
+							var obj={
+								"broj": i,
+								"brojPojavljivanja": t
+							}
+							sortiraniObjekti39.push(obj);
+						}
+						)
+						console.log(sortiraniObjekti39);
+						for(let i=0;i<sortiraniObjekti39.length-1;i++){
+							for(let j=i+1;j<sortiraniObjekti39.length;j++){
+								if(sortiraniObjekti39[i].brojPojavljivanja > sortiraniObjekti39[j].brojPojavljivanja){
+									let tmp= sortiraniObjekti39[i];
+									sortiraniObjekti39[i]=sortiraniObjekti39[j];
+									sortiraniObjekti39[j]=tmp;
+								}
+							}
+						}
+						console.log(sortiraniObjekti39);
+
+						var dobitnaKombinacija=[];
+						for(let i=0;i<7;i++){
+							dobitnaKombinacija.push(sortiraniObjekti39[i].broj);
+						}
+						console.log(dobitnaKombinacija);
+					})
+				})
+				/*usernames.forEach(async(username)=>{
+					var query3= 'SELECT '+ username + ' FROM "BrojKombinacija_By_Kolo" WHERE idkola= ?';
+					//console.log(query3);
+					//console.log(params);
+					console.log("Pre izvrsenja q3");
+					await client.execute(query3,params,async function(err,result){
+						if(result!=undefined){
+							let brUplata= parseInt(result.rows[0][username]); //dotle je okej
+							console.log("BRU "+brUplata);
+							var tmpusername=username + "_";
+							username+="_";
+							//tmpusername+="_";
+							for(let i=1;i<=brUplata;i++){
+								console.log("i je "+i);
+								username+= i;
+								console.log("USERNAME PRE EXECUTE "+username);
+								var query4= 'SELECT ' + username + ' FROM "Kombinacija_By_Kolo" WHERE idkola= ?';
+								 await client.execute(query4,params,async function(err,result){
+									console.log("QUERY4 "+query4);
+									console.log("USERNAME POSLE EXECUTE "+username);
+									console.log(result.rows);
+									let kombinacija= result.rows[0][username];
+									console.log("KOMBINACIJA "+kombinacija);
+									//kombinacija= kombinacija.split(" ");
+									//console.log(kombinacija);
+									//kombinacije.push(kombinacija);
+								})
+								username=tmpusername;
+							}
+						}
+					})
+				})*/
+				/*var niz39=[];
+				for(let i=1;i<=39;i++)
+					niz39[i]=null;*/
+				//kombinacije.forEach(k)
+			})
 		})
-		// izvuci usernameove iz korisnik pa onda za svaki od njih vidi koliko ima uplata u brojkombinacijabykolo za tekuce kolo pa onda kroz petlju citas iz kombinacija by kolo
-		// svaku kombinaciju koju je taj korisnik odigrao i tako za svakog korisnika
-		// sve te kombinacije pamtis negde kao poseban niz 
-		// osmisliti kako ce izgledati pretraga
+		
 	})
 	
 //})
