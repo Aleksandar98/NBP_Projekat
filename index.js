@@ -277,21 +277,17 @@ app.put("/uplatiKombinaciju", async(req,res)=>{
 					}
 					else{
 						console.log(Object.keys(result.rows[0][idkorisnika]));
-						var brKombinacija=parseInt(result.rows[0][idkorisnika]) +1; // tu je greska ne vidi idkorisnika a sekaa vidi
+						var brKombinacija=parseInt(result.rows[0][idkorisnika]) +1; 
 						console.log("BRK "+brKombinacija);
-						idkorisnika2+= (parseInt(result.rows[0][idkorisnika]) +1).toString(); //takodje i ovde
+						idkorisnika2+= (parseInt(result.rows[0][idkorisnika]) +1).toString(); 
 						console.log(idkorisnika2);
 						var query3= 'ALTER TABLE "Kombinacija_By_Kolo" ADD ' + idkorisnika2 + " text ";
-					//console.log("QUERY3 "+ query3);
-					//var query3= 'INSERT INTO "Kombinacija_By_Kolo" (idkola, idkorisnika, kombinacija) values (?, ?, ?)';
-					//let params3=[params2[0], idkorisnika, kombinacija]
+					
 						await client.execute(query3, async function(err,result){
-						//res.json(result);
 							var query4= 'UPDATE "Kombinacija_By_Kolo" SET ' + idkorisnika2 + " = '" + kombinacija + "' WHERE idkola= ?";
 							console.log("QUERY4 "+ query4);
 							console.log(params);
 							await client.execute(query4, params, async function(err,result){
-								//res.send("Kombinacija je uplacena");
 								var query5= 'UPDATE "BrojKombinacija_By_Kolo" SET ' + idkorisnika + " = '"+ brKombinacija +"' WHERE idkola= ?";
 								console.log("QUERY5 "+ query5);
 								await client.execute(query5,params,async function(err,result){
@@ -462,7 +458,24 @@ cron.schedule("14 16 * * Wed", async function(){
 		})
 		
 	})
-	
+	app.get('/vratiPocetakKola',function (req,res) {
+		const pocetakKola = new Date()
+	pocetakKola.setSeconds(pocetakKola.getSeconds() + 5)
+	console.log(pocetakKola)
+		res.send(pocetakKola);
+	})
+	//Kombinacija izvucena kao dobitna
+	app.get('/vratiKombinaciju',function (req,res) {
+		let niz =[ 6 , 24 , 11 , 8 , 11,13,26];
+		res.send(niz);
+	})
+
+	app.get('/vratiDobitke',function (req,res) {
+		// kombinacije sa 7,6,5,4,3 pogodaka
+		let niz =[0 ,1,15,15335,1123434]
+	 
+		res.send(niz);
+	})
 //})
 
 //--------------------------------------------------------------------------------------
