@@ -1,5 +1,5 @@
-import React,{ Component } from 'react';
-import { withStyles,makeStyles } from '@material-ui/core/styles';
+import React, { Component } from 'react';
+import { withStyles, makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -32,83 +32,73 @@ const useStyles = makeStyles({
   },
 });
 
-
-class BasicTable extends Component{
-  
+class BasicTable extends Component {
   constructor(props) {
     super(props);
-    this.state = {izvlacenja: []};
-  }
-  
-  
-  createData(brPogodaka, brDobitnika) {
-    return { brPogodaka, brDobitnika};
+    this.state = { izvlacenja: [] };
   }
 
-  
-  componentDidMount(){
-    fetch("http://localhost:5000/vratiDobitke")
-    .then(res => res.json())
-    .then(
-      (result) => {
-        for(let i=0;i<5;i++){
-          rows.push( this.createData(7-i,result[i]))
-        }
-       this.setState({izvlacenja: rows})
-        console.log(rows)
-         
-      },
-      // Note: it's important to handle errors here
-      // instead of a catch() block so that we don't swallow
-      // exceptions from actual bugs in components.
-      (error) => {
-        console.log(error)
-        /*this.setState({
+  createData(brPogodaka, brDobitnika) {
+    return { brPogodaka, brDobitnika };
+  }
+
+  componentDidMount() {
+    fetch('http://localhost:5000/vratiDobitke')
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          for (let i = 0; i < 5; i++) {
+            rows.push(this.createData(7 - i, result[i]));
+          }
+          this.setState({ izvlacenja: rows });
+          console.log(rows);
+        },
+        // Note: it's important to handle errors here
+        // instead of a catch() block so that we don't swallow
+        // exceptions from actual bugs in components.
+        (error) => {
+          console.log(error);
+          /*this.setState({
           isLoaded: true,
           error
         });
         */
-      }
-    )
-  }
-  
-  popunitabelu() {
-    
+        }
+      );
   }
 
-  
-  render(){
+  popunitabelu() {}
+
+  render() {
     const classes = this.props.classes;
-    this.popunitabelu()
+    this.popunitabelu();
     return (
       <TableContainer component={Paper}>
-        <Table className={classes.table} aria-label="simple table">
+        <Table className={classes.table} aria-label='simple table'>
           <TableHead>
-            <StyledTableRow >
+            <StyledTableRow>
               <StyledTableCell>Broj pogodaka</StyledTableCell>
-              <StyledTableCell >Broj dobitnika</StyledTableCell>
-            </StyledTableRow >
+              <StyledTableCell>Broj dobitnika</StyledTableCell>
+            </StyledTableRow>
           </TableHead>
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.brPogodaka}>
-                <StyledTableCell component="th" scope="row">
-                {row.brPogodaka}
+                <StyledTableCell component='th' scope='row'>
+                  {row.brPogodaka}
                 </StyledTableCell>
-                
-                <StyledTableCell >{row.brDobitnika}</StyledTableCell>
+
+                <StyledTableCell>{row.brDobitnika}</StyledTableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
       </TableContainer>
-    )
+    );
   }
 }
 
 export default () => {
   const classes = useStyles();
-  return (
-      <BasicTable classes={classes} />
-  )
-}
+  return <BasicTable classes={classes} />;
+};

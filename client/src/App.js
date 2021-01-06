@@ -1,29 +1,22 @@
-import logo from './logo.svg';
-import './App.css';
+import './Loto.css';
 import React from 'react';
-import Countdown from './Countdown';
-import Drum from './Drum'
-import BasicTable from './BasicTable';
-function App(){
+import Loto from './component/Loto';
+import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import Register from './component/Register';
+import Login from './component/Login';
+import Home from './component/Home';
 
-  const [count, setCount] = React.useState(0)
-  const increment = () => setCount(c => c = 1)
-
-  const [temp, setTemp] = React.useState(0)
-  // const increment2 = () => setTemp(c => c = 1)
-  const increment2 = () => setTemp(c => c = 1)
-
+function App() {
   return (
-  <div className="App">
-
-    <Countdown  onIstekao={increment} /> 
-    {count === 1 && temp === 0 ? <Drum onZavrsio={increment2} /> : null}
-     {temp === 1 ? <BasicTable/> : null} 
-    
-  </div>
-    
+    <Router>
+      <Switch>
+        <Route exact path='/' component={Home} />
+        <Route exact path='/profile' component={Loto} />
+        <Route exact path='/register' component={Register} />
+        <Route exact path='/login' component={Login} />
+      </Switch>
+    </Router>
   );
-  }
-
+}
 
 export default App;
