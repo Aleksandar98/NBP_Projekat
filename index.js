@@ -69,7 +69,7 @@ app.post("/createkorisnik", function (req, res) {
         "', '" +
         korisnik.password +
         "', '" +
-        kosrisnik.username +
+        korisnik.username +
         "', '" +
         korisnik.ime +
         "','" +
@@ -94,15 +94,21 @@ app.post("/createkorisnik", function (req, res) {
   });
 });
 
-app.get("/provera", function (req, res) {
-  var user = req.body;
-  let params = [req.body.email, req.body.password];
+app.post("/provera", function (req, res) {
+  console.log(req.body);
+  var email = req.body.email;
+  var password = req.body.password;
+  let params = [email, password];
   var query = 'SELECT * FROM "Korisnik" WHERE email= ? AND password= ?';
+  console.log(query);
+  console.log(params);
   client.execute(query, params, function (err, result) {
     if (err) {
+      console.log("Greska");
       res.send(err);
       return;
     }
+    console.log(result.rows[0]);
     if (result.rows[0] == undefined) res.json({ msg: "Greska pri logovanju" });
     else res.json(result.rows[0]);
   });

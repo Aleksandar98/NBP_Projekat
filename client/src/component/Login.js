@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Link, Redirect, useHistory } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link, Redirect, useHistory } from "react-router-dom";
+import axios from "axios";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const history = useHistory();
@@ -14,44 +15,52 @@ const Login = () => {
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    //da li postoji u bazu, redirect na korisnikovu stranu
-    history.push('/');
+    const zaSlanje = {
+      email,
+      password,
+    };
+    try {
+      const res = await axios.post("http://localhost:5000/provera", zaSlanje);
+      console.log(res.data); // history.push("/");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
     <div>
-      <section class='container1'>
-        <h1 class='large1 text-primary1'>Login</h1>
-        <p class='lead1'>
-          <i class='fas fa-user'></i> Prijavi se na svoj nalog
+      <section class="container1">
+        <h1 class="large1 text-primary1">Login</h1>
+        <p class="lead1">
+          <i class="fas fa-user"></i> Prijavi se na svoj nalog
         </p>
-        <form class='form1' onSubmit={onSubmit}>
-          <div class='form1-group'>
+        <form class="form1" onSubmit={onSubmit}>
+          <div class="form1-group">
             <input
-              type='email'
-              placeholder='Email Address'
-              name='email'
+              type="email"
+              placeholder="Email Address"
+              name="email"
               required
               value={email}
               onChange={onChange}
             />
           </div>
-          <div class='form1-group'>
+          <div class="form1-group">
             <input
-              type='password'
-              placeholder='Password'
-              name='password'
+              type="password"
+              placeholder="Password"
+              name="password"
               required
               value={password}
               onChange={onChange}
             />
           </div>
-          <input type='submit' class='btn btn-primary' value='Login' />
+          <input type="submit" class="btn btn-primary" value="Login" />
         </form>
-        <p class='my-1'>
-          Nemas nalog? <Link to='/register'>Registruj se</Link>
+        <p class="my-1">
+          Nemas nalog? <Link to="/register">Registruj se</Link>
         </p>
       </section>
     </div>
