@@ -69,7 +69,7 @@ app.post('/createkorisnik', function (req, res) {
         "', '" +
         korisnik.password +
         "', '" +
-        kosrisnik.username +
+        korisnik.username +
         "', '" +
         korisnik.ime +
         "','" +
@@ -94,15 +94,21 @@ app.post('/createkorisnik', function (req, res) {
   });
 });
 
-app.get('/provera', function (req, res) {
-  var user = req.body;
-  let params = [req.body.email, req.body.password];
+app.post('/provera', function (req, res) {
+  console.log(req.body);
+  var email = req.body.email;
+  var password = req.body.password;
+  let params = [email, password];
   var query = 'SELECT * FROM "Korisnik" WHERE email= ? AND password= ?';
+  console.log(query);
+  console.log(params);
   client.execute(query, params, function (err, result) {
     if (err) {
+      console.log('Greska');
       res.send(err);
       return;
     }
+    console.log(result.rows[0]);
     if (result.rows[0] == undefined) res.json({ msg: 'Greska pri logovanju' });
     else res.json(result.rows[0]);
   });
@@ -137,7 +143,7 @@ app.post('/createFirma', function (req, res) {
 const cron = require('node-cron');
 let shell = require('shelljs');
 
-cron.schedule('58 19 * * Sun', async function () {
+cron.schedule('28 02 * * Thu', async function () {
   var today = new Date();
   var dd = today.getDate().toString().padStart(2, '0');
   var mm = (today.getMonth() + 1).toString().padStart(2, '0');
@@ -161,67 +167,66 @@ cron.schedule('58 19 * * Sun', async function () {
       datum: dat,
       vrednostsedmice: sedmica,
       stanje: 'otvoreno',
+      // uplatili: null,
     };
 
     console.log(kolo);
-    let params = [kolo.idKola, kolo.datum, kolo.vrednostsedmice, kolo.stanje];
+    let params = [
+      kolo.idKola,
+      kolo.datum,
+      kolo.vrednostsedmice,
+      kolo.stanje,
+      //kolo.uplatili,
+    ];
     var query2 =
-      'INSERT INTO "Kolo" (idkola, datum, vrednostsedmice, stanje) VALUES (?, ? ,? ,? )';
+      'INSERT INTO "Kolo" (idkola, datum, vrednostsedmice, stanje) VALUES (?, ? ,? ,?)';
 
     await client.execute(query2, params, function (err, result) {
       if (err) {
         console.log('err:', err);
-        res.send(err);
+        console.log(err);
         return;
       } else {
-        var query3 = 'SELECT email FROM "Korisnik"';
-        client.execute(query3, (err, result) => {
-          let emails = [];
-          result.rows.forEach((r) => {
-            emails.push(r.email);
-          });
-          /*const sgMail = require('@sendgrid/mail');
-									sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-									
-									const msg = {
-									  to: emails, // replace these with your email addresses
-									  from: 'Drzavna lutrija Srbije',
-									  subject: '🍩 Pocetak novog kola 🍩',
-									  text: 'Novo kolo je krenulo, mozete vec sada da uplatite svoju novu kombinaciju',
-									  html: '<p>Izaberite vasu kombinaciju i mozda bas vi osvojite sedmicu</em></p>',
-									};
-									
-									sgMail.sendMultiple(msg).then(() => {
-									  console.log('emails sent successfully!');
-									}).catch(error => {
-									  console.log(error);
-									});
-									*/
-          var transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-              user: 'urossmm1@gmail.com',
-              pass: 'urosurosuros',
-            },
-          });
-          emails.forEach((e) => {
-            var mailOptions = {
-              from: 'urossmm1@gmail.com',
-              to: e,
-              subject: 'Pocetak novog kola',
-              text:
-                'Novo kolo je krenulo, mozete vec sada da uplatite svoju novu kombinaciju! :)',
-            };
+        var queryn1 =
+          'INSERT INTO "BrojKombinacija_By_Kolo" (idkola) values(?)';
+        client.execute(queryn1, [kolo.idKola], function (err, result) {
+          var queryn2 = 'INSERT INTO "Kombinacija_By_Kolo" (idkola) values(?)';
+          client.execute(queryn2, [kolo.idKola], function (err, result) {
+            var query3 = 'SELECT email FROM "Korisnik"';
+            client.execute(query3, (err, result) => {
+              let emails = [];
+              result.rows.forEach((r) => {
+                emails.push(r.email);
+              });
 
-            transporter.sendMail(mailOptions, function (error, info) {
-              if (error) {
-                console.log(error);
-              } else {
-                console.log('Email sent: ' + info.response);
-              }
+              var transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: {
+                  user: 'urossmm1@gmail.com',
+                  pass: 'urosurosuros',
+                },
+              });
+              emails.forEach((e) => {
+                var mailOptions = {
+                  from: 'urossmm1@gmail.com',
+                  to: e,
+                  subject: 'Pocetak novog kola',
+                  text:
+                    'Novo kolo je krenulo, mozete vec sada da uplatite svoju novu kombinaciju! :)',
+                };
+
+                transporter.sendMail(mailOptions, function (error, info) {
+                  if (error) {
+                    console.log(error);
+                  } else {
+                    console.log('Email sent: ' + info.response);
+                  }
+                });
+              });
             });
           });
         });
+
         today.setDate(today.getDate() + 7);
         console.log(today);
         return today;
@@ -249,7 +254,7 @@ app.put('/vrednostSedmice', async (req, res) => {
 });
 
 app.put('/uplatiKombinaciju', async (req, res) => {
-  var kombinacija = req.body.kombinacija;
+  var kombinacija = req.body.kombinacija; // 1 14 5 12 15 3 5
   var idkorisnika = req.body.idkorisnika; //idkorisnika je njegov USERNAME
   var idkorisnika2 = req.body.idkorisnika + '_';
   //console.log(idkorisnika);
@@ -257,8 +262,8 @@ app.put('/uplatiKombinaciju', async (req, res) => {
   await client.execute(query1, async function (err, result) {
     //let params= [parseInt(result.first()['count']).toString()];
     let params = [result.rows[0]['idkola']];
-    console.log(params);
-    console.log(result);
+    console.log('params ' + params);
+    //console.log(result);
     var query2 = 'SELECT stanje FROM "Kolo" WHERE idkola=?';
     await client.execute(query2, params, async function (err, result) {
       if (result.rows[0].stanje == 'otvoreno') {
@@ -266,9 +271,10 @@ app.put('/uplatiKombinaciju', async (req, res) => {
           'SELECT ' +
           idkorisnika +
           ' FROM "BrojKombinacija_By_Kolo" WHERE idkola= ?';
-        var params10 = [/*idkorisnika,*/ params[0]];
-        //console.log(params10);
-        await client.execute(query10, params10, async function (err, result) {
+        //var params10 = [/*idkorisnika,*/ params[0]];
+        console.log(query10);
+        console.log(params);
+        await client.execute(query10, params, async function (err, result) {
           //console.log(result.rows[0]);
           if (result == undefined) {
             console.log('uso');
@@ -307,7 +313,17 @@ app.put('/uplatiKombinaciju', async (req, res) => {
                       query4,
                       params,
                       async function (err, result) {
+                        //res.send("Kombinacija uplacena");
+                        /* var query5 =
+                          'UPDATE "Kolo" SET bruplata=' +
+                          "'" +
+                          idkorisnika +
+                          "' WHERE idkola= ?";
+                        console.log(query5);
+                        client.execute(query5, params, function (err, result) {
+                          */
                         res.send('Kombinacija uplacena');
+                        //});
                       }
                     );
                   });
@@ -315,12 +331,15 @@ app.put('/uplatiKombinaciju', async (req, res) => {
               );
             });
           } else {
-            console.log(Object.keys(result.rows[0][idkorisnika]));
-            var brKombinacija = parseInt(result.rows[0][idkorisnika]) + 1;
+            //console.log(Object.keys(result.rows[0][idkorisnika]));
+            //console.log("log " + result.rows[0][idkorisnika]);
+            var brKombinacija;
+            if (result.rows[0][idkorisnika] == null) brKombinacija = 1;
+            else brKombinacija = parseInt(result.rows[0][idkorisnika]) + 1;
             console.log('BRK ' + brKombinacija);
-            idkorisnika2 += (
-              parseInt(result.rows[0][idkorisnika]) + 1
-            ).toString();
+            idkorisnika2 += brKombinacija
+              //parseInt(result.rows[0][idkorisnika]) + 1
+              .toString();
             console.log(idkorisnika2);
             var query3 =
               'ALTER TABLE "Kombinacija_By_Kolo" ADD ' +
@@ -366,7 +385,7 @@ app.put('/uplatiKombinaciju', async (req, res) => {
   });
 });
 
-cron.schedule('14 16 * * Wed', async function () {
+cron.schedule('05 22 * * Wed', async function () {
   var query1 = 'select count(*) from "Kolo"';
   await client.execute(query1, async function (err, result) {
     if (err) {
@@ -390,26 +409,39 @@ app.get('/test', async function (req, res) {
   var query1 = 'SELECT idkola FROM "Kolo" LIMIT 1';
   await client.execute(query1, async function (err, result) {
     var params = [result.rows[0]['idkola']];
-    var query2 = 'SELECT username FROM "Korisnik"';
+    console.log(params);
+    //var query2 = 'SELECT username FROM "Korisnik"';
+    var query2 = 'SELECT * FROM "BrojKombinacija_By_Kolo" WHERE idkola=?';
     await client.execute(
       query2,
+      params,
       /*params,*/ async function (err, result) {
         var usernames = [];
-        //console.log(result.rows);
-        result.rows.forEach((row) => {
-          usernames.push(row.username);
+        console.log(result.rows[0]);
+        Object.keys(result.rows[0]).forEach((item) => {
+          console.log(item);
+          if (item != 'idkola') usernames.push(item);
         });
+        //result.rows[0].forEach(item=>{
+
+        //})
+        //result.rows.forEach((row) => {
+        // usernames.push(row.username);
+        //}
+        //);
         var kombinacije = [];
-        //console.log(usernames); //radi
+        console.log('USERI ' + usernames); //radi
         var query3 =
           'SELECT ' +
           usernames +
           ' FROM "BrojKombinacija_By_Kolo" WHERE idkola= ?';
         client.execute(query3, params, async function (err, result) {
           //console.log(Object.keys(result.rows[0]));
+          //if (result != undefined) {
           var zaCitanje = [];
-          var keysLenght = Object.keys(result.rows[0]).length;
-          Object.keys(result.rows[0]).forEach((key, ind) => {
+          console.log(result);
+          //var keysLenght = Object.keys(result.rows[0]).length;
+          Object.keys(result.rows[0]).forEach((key) => {
             var user = key + '_';
             var tmpuser = user;
             var count = result.rows[0][key];
@@ -421,21 +453,23 @@ app.get('/test', async function (req, res) {
               user = tmpuser;
             }
           });
-          //console.log("ok");
+          console.log('ok');
           //console.log(zaCitanje);
           var query4 =
             'SELECT ' +
             zaCitanje +
             ' FROM "Kombinacija_By_Kolo" WHERE idkola= ?';
+          console.log(query4);
           client.execute(query4, params, function (err, result) {
-            console.log(result.rows[0]);
+            //console.log(result.rows[0]);
             var kombinacije = [];
             //console.log(Object.keys(result.rows[0]));
             Object.keys(result.rows[0]).forEach((key) => {
               //console.log("dodaje se kombinacija ");
               kombinacije.push(result.rows[0][key]);
+              console.log(result.rows[0][key]);
             });
-            //console.log(kombinacije);
+            console.log(kombinacije);
             var brojevi = [];
             kombinacije.forEach((kombinacija) => {
               kombinacija = kombinacija.split(' ');
@@ -461,7 +495,7 @@ app.get('/test', async function (req, res) {
               };
               sortiraniObjekti39.push(obj);
             });
-            console.log(sortiraniObjekti39);
+            //console.log(sortiraniObjekti39);
             for (let i = 0; i < sortiraniObjekti39.length - 1; i++) {
               for (let j = i + 1; j < sortiraniObjekti39.length; j++) {
                 if (
@@ -481,48 +515,15 @@ app.get('/test', async function (req, res) {
               dobitnaKombinacija.push(sortiraniObjekti39[i].broj);
             }
             console.log(dobitnaKombinacija);
+            res.send(dobitnaKombinacija);
           });
+          // }
         });
-        /*usernames.forEach(async(username)=>{
-					var query3= 'SELECT '+ username + ' FROM "BrojKombinacija_By_Kolo" WHERE idkola= ?';
-					//console.log(query3);
-					//console.log(params);
-					console.log("Pre izvrsenja q3");
-					await client.execute(query3,params,async function(err,result){
-						if(result!=undefined){
-							let brUplata= parseInt(result.rows[0][username]); //dotle je okej
-							console.log("BRU "+brUplata);
-							var tmpusername=username + "_";
-							username+="_";
-							//tmpusername+="_";
-							for(let i=1;i<=brUplata;i++){
-								console.log("i je "+i);
-								username+= i;
-								console.log("USERNAME PRE EXECUTE "+username);
-								var query4= 'SELECT ' + username + ' FROM "Kombinacija_By_Kolo" WHERE idkola= ?';
-								 await client.execute(query4,params,async function(err,result){
-									console.log("QUERY4 "+query4);
-									console.log("USERNAME POSLE EXECUTE "+username);
-									console.log(result.rows);
-									let kombinacija= result.rows[0][username];
-									console.log("KOMBINACIJA "+kombinacija);
-									//kombinacija= kombinacija.split(" ");
-									//console.log(kombinacija);
-									//kombinacije.push(kombinacija);
-								})
-								username=tmpusername;
-							}
-						}
-					})
-				})*/
-        /*var niz39=[];
-				for(let i=1;i<=39;i++)
-					niz39[i]=null;*/
-        //kombinacije.forEach(k)
       }
     );
   });
 });
+
 app.get('/vratiPocetakKola', function (req, res) {
   const pocetakKola = new Date();
   pocetakKola.setSeconds(pocetakKola.getSeconds() + 5);

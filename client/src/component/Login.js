@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, Redirect, useHistory } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -14,12 +15,20 @@ const Login = () => {
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    //da li postoji u bazu, redirect na korisnikovu stranu
-    localStorage.setItem('email', email);
-    localStorage.setItem('password', password);
-    history.push('/profile');
+    const zaSlanje = {
+      email,
+      password,
+    };
+    try {
+      const res = await axios.post('http://localhost:5000/provera', zaSlanje);
+      console.log(res.data);
+      localStorage.setItem('username', res.data.username);
+      history.push('/profile');
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (

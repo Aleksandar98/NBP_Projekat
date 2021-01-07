@@ -1,4 +1,4 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import axios from 'axios';
 import swal from 'sweetalert';
 import { useHistory } from 'react-router-dom';
@@ -38,9 +38,32 @@ const Register = () => {
     if (password !== password2) {
       swal('Lozinke se ne poklapaju');
     } else {
-      history.push('/profile');
-      //axios.post
-      //idem na stranicu za korisnika, ali mi treba taj korisnik
+      // history.push('/');
+      // const res = await axios.post(
+      //   "http://loclhost:5000/createkorisnik",
+      //   zaSlanje
+      // );
+      // console.log(res);
+
+      try {
+        const zaSlanje = {
+          username,
+          email,
+          ime,
+          prezime,
+          racun,
+          mesto,
+          telefon,
+          password,
+        };
+        const res = await axios.post(
+          'http://localhost:5000/createkorisnik',
+          zaSlanje
+        );
+        history.push('/login');
+      } catch (err) {
+        console.log(err);
+      }
     }
   };
 

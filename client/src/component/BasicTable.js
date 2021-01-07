@@ -1,12 +1,12 @@
-import React, { Component } from 'react';
-import { withStyles, makeStyles } from '@material-ui/core/styles';
-import Table from '@material-ui/core/Table';
-import TableBody from '@material-ui/core/TableBody';
-import TableCell from '@material-ui/core/TableCell';
-import TableContainer from '@material-ui/core/TableContainer';
-import TableHead from '@material-ui/core/TableHead';
-import TableRow from '@material-ui/core/TableRow';
-import Paper from '@material-ui/core/Paper';
+import React, { Component } from "react";
+import { withStyles, makeStyles } from "@material-ui/core/styles";
+import Table from "@material-ui/core/Table";
+import TableBody from "@material-ui/core/TableBody";
+import TableCell from "@material-ui/core/TableCell";
+import TableContainer from "@material-ui/core/TableContainer";
+import TableHead from "@material-ui/core/TableHead";
+import TableRow from "@material-ui/core/TableRow";
+import Paper from "@material-ui/core/Paper";
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
@@ -20,7 +20,7 @@ const StyledTableCell = withStyles((theme) => ({
 
 const StyledTableRow = withStyles((theme) => ({
   root: {
-    '&:nth-of-type(odd)': {
+    "&:nth-of-type(odd)": {
       backgroundColor: theme.palette.action.hover,
     },
   },
@@ -43,7 +43,7 @@ class BasicTable extends Component {
   }
 
   componentDidMount() {
-    fetch('http://localhost:5000/vratiDobitke')
+    fetch("http://localhost:5000/vratiDobitke")
       .then((res) => res.json())
       .then(
         (result) => {
@@ -74,7 +74,7 @@ class BasicTable extends Component {
     this.popunitabelu();
     return (
       <TableContainer component={Paper}>
-        <Table className={classes.table} aria-label='simple table'>
+        <Table className={classes.table} aria-label="simple table">
           <TableHead>
             <StyledTableRow>
               <StyledTableCell>Broj pogodaka</StyledTableCell>
@@ -84,7 +84,7 @@ class BasicTable extends Component {
           <TableBody>
             {rows.map((row) => (
               <TableRow key={row.brPogodaka}>
-                <StyledTableCell component='th' scope='row'>
+                <StyledTableCell component="th" scope="row">
                   {row.brPogodaka}
                 </StyledTableCell>
 

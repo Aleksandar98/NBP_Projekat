@@ -1,14 +1,16 @@
-import React, { Fragment, useState } from 'react';
+import React, { Fragment, useState, useEffect } from 'react';
 import swal from 'sweetalert';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 const Loto = (props) => {
   const [formData, setFormData] = useState({
     trenutnoOdigrano: [],
     uplata: 0,
+    username: localStorage.getItem('username'),
   });
 
-  const { trenutnoOdigrano, uplata } = formData;
+  const { trenutnoOdigrano, uplata, username } = formData;
 
   const Klik = (e) => {
     for (let i = 0; i < trenutnoOdigrano.length; i++) {
@@ -51,6 +53,20 @@ const Loto = (props) => {
         red.innerHTML = trenutnoOdigrano.join(', ');
         prostor.appendChild(red);
         setFormData({ ...formData, uplata: uplata - 100 });
+
+        const niz = trenutnoOdigrano.toString().replaceAll(',', ' ');
+        const zaSlanje = {
+          kombinacija: niz,
+          idkorisnika: username,
+        };
+        try {
+          const res = axios.put(
+            'http://localhost:5000/uplatiKombinaciju',
+            zaSlanje
+          );
+        } catch (err) {
+          console.log(err);
+        }
       } else {
         swal('Uspesno ste odustali od uplate!');
         return;
@@ -100,7 +116,7 @@ const Loto = (props) => {
     <Fragment>
       <nav className='navbar navbar-dark bg-dark justify-content-between'>
         <a className='navbar-brand' href='#'>
-          <i class='far fa-user fa-fw'></i> Username : danilo_19_
+          <i class='far fa-user fa-fw'></i> Username : {username}
         </a>
         <a className='navbar-brand' href='#'>
           Stanje na računu: {uplata} <i class='fas fa-dollar-sign fa-fw'></i>
