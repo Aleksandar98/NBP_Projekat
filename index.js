@@ -18,33 +18,6 @@ const client = new cassandra.Client({
   localDataCenter: "datacenter1",
 });
 
-/*function connectToCassandra(keyspace)
-{
-	return new Promise((success, failure)=>
-	{
-		var clientParams;
-		if(_.isNil(keyspace))
-		{
-			clientParams = { contactPoints: ['localhost'],localDataCenter:'datacenter1'};
-		}
-		else
-		{
-		
-			clientParams = 	{ contactPoints: ['localhost'],localDataCenter:'datacenter1' ,keyspace: keyspace};
-		}
-		const client = new cassandra.Client(clientParams);
-		client.connect(function(connectError)
-		{
-			console.log("Connected. Executing query...");
-			if(connectError)
-			{
-				console.log("connectError:", connectError);
-				return failure(connectError);
-			}
-			success(client);
-		});
-	});	
-}*/
 
 app.post("/createkorisnik", function (req, res) {
   var korisnik = req.body;
@@ -143,12 +116,16 @@ app.post("/createFirma", function (req, res) {
 const cron = require("node-cron");
 let shell = require("shelljs");
 
-cron.schedule("28 02 * * Thu", async function () {
+// Kreira novo kolo
+
+cron.schedule("50 26 22 * * Thu", async function () {
   var today = new Date();
+  today.setDate(today.getDate() + 7);
   var dd = today.getDate().toString().padStart(2, "0");
   var mm = (today.getMonth() + 1).toString().padStart(2, "0");
   var yyyy = today.getFullYear();
-  var dat = yyyy + "-" + mm + "-" + dd;
+  //var dat = yyyy + "-" + mm + "-" + dd;
+  var dat = today.toString()
 
   let query = 'select count(*) from "Kolo"';
   //let newId=0;
@@ -168,6 +145,7 @@ cron.schedule("28 02 * * Thu", async function () {
       vrednostsedmice: sedmica,
       stanje: "otvoreno",
       // uplatili: null,
+      dobitnakombinacija: null
     };
 
     console.log(kolo);
@@ -176,10 +154,11 @@ cron.schedule("28 02 * * Thu", async function () {
       kolo.datum,
       kolo.vrednostsedmice,
       kolo.stanje,
+      kolo.dobitnakombinacija
       //kolo.uplatili,
     ];
     var query2 =
-      'INSERT INTO "Kolo" (idkola, datum, vrednostsedmice, stanje) VALUES (?, ? ,? ,?)';
+      'INSERT INTO "Kolo" (idkola, datum, vrednostsedmice, stanje, dobitnakombinacija) VALUES (?, ? ,? ,?, ?)';
 
     await client.execute(query2, params, function (err, result) {
       if (err) {
@@ -233,11 +212,11 @@ cron.schedule("28 02 * * Thu", async function () {
       }
     });
   });
-});
+})
 
 app.put("/vrednostSedmice", async (req, res) => {
   let novaVrednost = req.body.vrednostSedmice;
-  let query1 = 'SELECT idkola FROM "Kolo" LIMIT 1';
+  let query1 = 'SELECT idkola FROM "Kolo" limit 1';
   await client.execute(query1, async function (err, result) {
     let params = [result.rows[0].idkola];
     console.log(params);
@@ -385,7 +364,7 @@ app.put("/uplatiKombinaciju", async (req, res) => {
   });
 });
 
-cron.schedule("05 22 * * Wed", async function () {
+cron.schedule("00 17 * * Thu", async function () {
   var query1 = 'select count(*) from "Kolo"';
   await client.execute(query1, async function (err, result) {
     if (err) {
@@ -404,9 +383,11 @@ cron.schedule("05 22 * * Wed", async function () {
   });
 });
 
-cron.schedule("51 17 * * Thu", async function () {
+//Izvlaci dobitnu kombinaciju za tekuce kolo
+
+cron.schedule("00 26 22 * * Thu", async function () {
   //app.get("/test", async function (req, res) {
-  var query1 = 'SELECT idkola FROM "Kolo" LIMIT 1';
+  var query1 = 'SELECT idkola FROM "Kolo" limit 1';
   await client.execute(query1, async function (err, result) {
     var params = [result.rows[0]["idkola"]];
     console.log(params);
@@ -517,8 +498,11 @@ cron.schedule("51 17 * * Thu", async function () {
             console.log(dobitnaKombinacija);
             //res.send(dobitnaKombinacija);
             var dobitnaText = "";
-            dobitnaKombinacija.forEach((db) => {
-              dobitnaText += db.toString() + " ";
+            dobitnaKombinacija.forEach((db,ind) => {
+              if(ind==dobitnaKombinacija.length-1)
+                dobitnaText += db.toString();
+              else
+                dobitnaText += db.toString() + " ";
             });
             console.log(dobitnaText);
             var query5 =
@@ -542,17 +526,30 @@ cron.schedule("51 17 * * Thu", async function () {
 });
 //Iz baze vidi kad pocinje novo kolo
 app.get("/vratiPocetakKola", function (req, res) {
-  const pocetakKola = new Date();
+
+  /*const pocetakKola = new Date();
   pocetakKola.setSeconds(pocetakKola.getSeconds() + 15);
   console.log(pocetakKola);
-  res.send(pocetakKola);
+  res.send(pocetakKola);*/
+  var query1 = 'SELECT datum FROM "Kolo" limit 1';
+  client.execute(query1, function (err, result) {
+    console.log(result.rows[0]["datum"])
+    res.json(result.rows[0]["datum"]);
+  });
+
 });
 //Kombinacija izvucena kao dobitna
 app.get("/vratiKombinaciju", function (req, res) {
   //let niz = [6, 24, 11, 8, 11, 13, 26];
-  var query1 = 'SELECT dobitnakombinacija FROM "Kolo" LIMIT 1';
+  
+  var query1 = 'SELECT dobitnakombinacija FROM "Kolo" limit 1';
   client.execute(query1, function (err, result) {
-    res.send(result.rows[0]["dobitnakombinacija"]);
+    var brojevi = [];
+    var kombinacija = result.rows[0]["dobitnakombinacija"]
+    brojevi = kombinacija.split(" ");
+
+  
+    res.json(brojevi);
   });
   //res.send(niz);
 });
