@@ -524,9 +524,10 @@ app.get('/test', async function (req, res) {
   });
 });
 
+//Iz baze vidi kad pocinje novo kolo
 app.get('/vratiPocetakKola', function (req, res) {
   const pocetakKola = new Date();
-  pocetakKola.setSeconds(pocetakKola.getSeconds() + 5);
+  pocetakKola.setSeconds(pocetakKola.getSeconds() + 15);
   console.log(pocetakKola);
   res.send(pocetakKola);
 });
