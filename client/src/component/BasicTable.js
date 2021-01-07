@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component, Fragment } from "react";
 import { withStyles, makeStyles } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
@@ -7,6 +7,7 @@ import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
+import Blink from 'react-blink-text';
 
 const StyledTableCell = withStyles((theme) => ({
   head: {
@@ -35,7 +36,7 @@ const useStyles = makeStyles({
 class BasicTable extends Component {
   constructor(props) {
     super(props);
-    this.state = { izvlacenja: [] };
+    this.state = { izvlacenja: [] , kombinacija:[] };
   }
 
   createData(brPogodaka, brDobitnika) {
@@ -65,14 +66,50 @@ class BasicTable extends Component {
         */
         }
       );
+
+      fetch('http://localhost:5000/vratiKombinaciju')
+      .then((res) => res.json())
+      .then(
+        (result) => {
+          this.setState({ kombinacija: result });
+          console.log(result);
+        },
+        // Note: it's important to handle errors here
+        // instead of a catch() block so that we don't swallow
+        // exceptions from actual bugs in components.
+        (error) => {
+          console.log(error);
+          /*this.setState({
+          isLoaded: true,
+          error
+        });
+        */
+        }
+      );
   }
 
   popunitabelu() {}
+
+  vratiSredjenNiz(){
+    
+     var niz = this.state.kombinacija;
+     var sredjenNiz ='';
+      for(var i=0;i<7;i++){
+        sredjenNiz+= " "+niz[i]
+      }
+      return sredjenNiz
+  }
 
   render() {
     const classes = this.props.classes;
     this.popunitabelu();
     return (
+      <Fragment>
+        <h1>Rezultati prethodnog kola</h1>
+        
+        <h3>Dobtina kombinacija : <Blink color='red' text={this.vratiSredjenNiz()} fontSize='30'>
+          
+        </Blink> </h3>
       <TableContainer component={Paper}>
         <Table className={classes.table} aria-label="simple table">
           <TableHead>
@@ -94,6 +131,7 @@ class BasicTable extends Component {
           </TableBody>
         </Table>
       </TableContainer>
+      </Fragment>
     );
   }
 }
