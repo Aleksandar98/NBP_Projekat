@@ -17,7 +17,9 @@ const Login = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     //da li postoji u bazu, redirect na korisnikovu stranu
-    history.push('/');
+    localStorage.setItem('email', email);
+    localStorage.setItem('password', password);
+    history.push('/profile');
   };
 
   return (

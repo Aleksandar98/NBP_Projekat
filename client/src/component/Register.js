@@ -38,7 +38,7 @@ const Register = () => {
     if (password !== password2) {
       swal('Lozinke se ne poklapaju');
     } else {
-      history.push('/');
+      history.push('/profile');
       //axios.post
       //idem na stranicu za korisnika, ali mi treba taj korisnik
     }
