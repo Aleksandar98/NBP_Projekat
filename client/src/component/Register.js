@@ -33,17 +33,28 @@ const Register = () => {
   const onChange = (e) =>
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
+  function allLetter(inputtxt) {
+    var letters = /^[A-Za-z]+$/;
+    if (inputtxt.match(letters)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   const onSubmit = async (e) => {
     e.preventDefault();
     if (password !== password2) {
       swal('Lozinke se ne poklapaju');
     } else {
-      // history.push('/');
-      // const res = await axios.post(
-      //   "http://loclhost:5000/createkorisnik",
-      //   zaSlanje
-      // );
-      // console.log(res);
+      if (!allLetter(username)) {
+        swal('Opseg vrednosti username-a mora biti: a-zA-Z');
+        return;
+      }
+
+      swal('Uspesno ste registrovani', {
+        icon: 'success',
+      });
 
       try {
         const zaSlanje = {
@@ -56,6 +67,7 @@ const Register = () => {
           telefon,
           password,
         };
+        console.log(zaSlanje);
         const res = await axios.post(
           'http://localhost:5000/createkorisnik',
           zaSlanje
