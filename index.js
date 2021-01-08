@@ -18,7 +18,6 @@ const client = new cassandra.Client({
   localDataCenter: "datacenter1",
 });
 
-
 app.post("/createkorisnik", function (req, res) {
   var korisnik = req.body;
   console.log("korisnik:", korisnik);
@@ -118,14 +117,14 @@ let shell = require("shelljs");
 
 // Kreira novo kolo
 
-cron.schedule("50 26 22 * * Thu", async function () {
+cron.schedule("50 01 01 * * Fri", async function () {
   var today = new Date();
   today.setDate(today.getDate() + 7);
   var dd = today.getDate().toString().padStart(2, "0");
   var mm = (today.getMonth() + 1).toString().padStart(2, "0");
   var yyyy = today.getFullYear();
   //var dat = yyyy + "-" + mm + "-" + dd;
-  var dat = today.toString()
+  var dat = today.toString();
 
   let query = 'select count(*) from "Kolo"';
   //let newId=0;
@@ -145,7 +144,7 @@ cron.schedule("50 26 22 * * Thu", async function () {
       vrednostsedmice: sedmica,
       stanje: "otvoreno",
       // uplatili: null,
-      dobitnakombinacija: null
+      dobitnakombinacija: null,
     };
 
     console.log(kolo);
@@ -154,7 +153,7 @@ cron.schedule("50 26 22 * * Thu", async function () {
       kolo.datum,
       kolo.vrednostsedmice,
       kolo.stanje,
-      kolo.dobitnakombinacija
+      kolo.dobitnakombinacija,
       //kolo.uplatili,
     ];
     var query2 =
@@ -212,7 +211,7 @@ cron.schedule("50 26 22 * * Thu", async function () {
       }
     });
   });
-})
+});
 
 app.put("/vrednostSedmice", async (req, res) => {
   let novaVrednost = req.body.vrednostSedmice;
@@ -313,6 +312,7 @@ app.put("/uplatiKombinaciju", async (req, res) => {
             //console.log(Object.keys(result.rows[0][idkorisnika]));
             //console.log("log " + result.rows[0][idkorisnika]);
             var brKombinacija;
+            console.log(result.rows[0][idkorisnika]);
             if (result.rows[0][idkorisnika] == null) brKombinacija = 1;
             else brKombinacija = parseInt(result.rows[0][idkorisnika]) + 1;
             console.log("BRK " + brKombinacija);
@@ -385,170 +385,174 @@ cron.schedule("00 17 * * Thu", async function () {
 
 //Izvlaci dobitnu kombinaciju za tekuce kolo
 
-cron.schedule("00 26 22 * * Thu", async function () {
-  //app.get("/test", async function (req, res) {
-  var query1 = 'SELECT idkola FROM "Kolo" limit 1';
-  await client.execute(query1, async function (err, result) {
-    var params = [result.rows[0]["idkola"]];
-    console.log(params);
-    //var query2 = 'SELECT username FROM "Korisnik"';
-    var query2 = 'SELECT * FROM "BrojKombinacija_By_Kolo" WHERE idkola=?';
-    await client.execute(
-      query2,
-      params,
-      /*params,*/ async function (err, result) {
-        var usernames = [];
-        console.log(result.rows[0]);
-        Object.keys(result.rows[0]).forEach((item) => {
-          console.log(item);
-          if (item != "idkola") usernames.push(item);
-        });
-        //result.rows[0].forEach(item=>{
+cron.schedule("00 36 01 * * Fri", async function () {
+  var query0 = 'SELECT COUNT(*) FROM "Kolo"';
+  await client.execute(query0, async function (err, result) {
+    console.log("TEST");
+    //console.log(result.first()["count"]);
+    console.log(parseInt(result.first()["count"]));
+    if (parseInt(result.first()["count"]) == 0) return;
 
-        //})
-        //result.rows.forEach((row) => {
-        // usernames.push(row.username);
-        //}
-        //);
-        var kombinacije = [];
-        console.log("USERI " + usernames); //radi
-        var query3 =
-          "SELECT " +
-          usernames +
-          ' FROM "BrojKombinacija_By_Kolo" WHERE idkola= ?';
-        client.execute(query3, params, async function (err, result) {
-          //console.log(Object.keys(result.rows[0]));
-          //if (result != undefined) {
-          var zaCitanje = [];
-          console.log(result);
-          //var keysLenght = Object.keys(result.rows[0]).length;
-          Object.keys(result.rows[0]).forEach((key) => {
-            var user = key + "_";
-            var tmpuser = user;
-            var count = result.rows[0][key];
-            for (let i = 1; i <= count; i++) {
-              user += i;
-              //if(ind!=keysLenght && i!=count)
-              //user+=" ,"
-              zaCitanje.push(user);
-              user = tmpuser;
-            }
+    //app.get("/test", async function (req, res) {
+    var query1 = 'SELECT idkola FROM "Kolo" limit 1';
+    await client.execute(query1, async function (err, result) {
+      var params = [result.rows[0]["idkola"]];
+      console.log(params);
+      //var query2 = 'SELECT username FROM "Korisnik"';
+      var query2 = 'SELECT * FROM "BrojKombinacija_By_Kolo" WHERE idkola=?';
+      await client.execute(
+        query2,
+        params,
+        /*params,*/ async function (err, result) {
+          var usernames = [];
+          console.log(result.rows[0]);
+          Object.keys(result.rows[0]).forEach((item) => {
+            console.log(item);
+            if (item != "idkola") usernames.push(item);
           });
-          console.log("ok");
-          //console.log(zaCitanje);
-          var query4 =
+          //result.rows[0].forEach(item=>{
+
+          //})
+          //result.rows.forEach((row) => {
+          // usernames.push(row.username);
+          //}
+          //);
+          var kombinacije = [];
+          console.log("USERI " + usernames); //radi
+          var query3 =
             "SELECT " +
-            zaCitanje +
-            ' FROM "Kombinacija_By_Kolo" WHERE idkola= ?';
-          console.log(query4);
-          client.execute(query4, params, function (err, result) {
-            //console.log(result.rows[0]);
-            var kombinacije = [];
+            usernames +
+            ' FROM "BrojKombinacija_By_Kolo" WHERE idkola= ?';
+          client.execute(query3, params, async function (err, result) {
             //console.log(Object.keys(result.rows[0]));
+            //if (result != undefined) {
+            var zaCitanje = [];
+            console.log(result);
+            //var keysLenght = Object.keys(result.rows[0]).length;
             Object.keys(result.rows[0]).forEach((key) => {
-              //console.log("dodaje se kombinacija ");
-              kombinacije.push(result.rows[0][key]);
-              console.log(result.rows[0][key]);
+              var user = key + "_";
+              var tmpuser = user;
+              var count = result.rows[0][key];
+              for (let i = 1; i <= count; i++) {
+                user += i;
+                //if(ind!=keysLenght && i!=count)
+                //user+=" ,"
+                zaCitanje.push(user);
+                user = tmpuser;
+              }
             });
-            console.log(kombinacije);
-            var brojevi = [];
-            kombinacije.forEach((kombinacija) => {
-              kombinacija = kombinacija.split(" ");
-              //console.log(kombinacija);
-              kombinacija.forEach((broj) => {
-                broj = parseInt(broj);
-                //console.log(broj);
-                brojevi.push(broj);
+            console.log("ok");
+            //console.log(zaCitanje);
+            var query4 =
+              "SELECT " +
+              zaCitanje +
+              ' FROM "Kombinacija_By_Kolo" WHERE idkola= ?';
+            console.log(query4);
+            client.execute(query4, params, function (err, result) {
+              //console.log(result.rows[0]);
+              var kombinacije = [];
+              //console.log(Object.keys(result.rows[0]));
+              Object.keys(result.rows[0]).forEach((key) => {
+                //console.log("dodaje se kombinacija ");
+                kombinacije.push(result.rows[0][key]);
+                console.log(result.rows[0][key]);
               });
-            });
-            //console.log(brojevi);
-            var tablica39 = [];
-            for (let i = 1; i <= 39; i++) tablica39[i] = 0;
-            brojevi.forEach((broj) => {
-              tablica39[broj]++;
-            });
-            //console.log(tablica39);
-            var sortiraniObjekti39 = [];
-            tablica39.forEach((t, i) => {
-              var obj = {
-                broj: i,
-                brojPojavljivanja: t,
-              };
-              sortiraniObjekti39.push(obj);
-            });
-            //console.log(sortiraniObjekti39);
-            for (let i = 0; i < sortiraniObjekti39.length - 1; i++) {
-              for (let j = i + 1; j < sortiraniObjekti39.length; j++) {
-                if (
-                  sortiraniObjekti39[i].brojPojavljivanja >
-                  sortiraniObjekti39[j].brojPojavljivanja
-                ) {
-                  let tmp = sortiraniObjekti39[i];
-                  sortiraniObjekti39[i] = sortiraniObjekti39[j];
-                  sortiraniObjekti39[j] = tmp;
+              console.log(kombinacije);
+              var brojevi = [];
+              kombinacije.forEach((kombinacija) => {
+                kombinacija = kombinacija.split(" ");
+                //console.log(kombinacija);
+                kombinacija.forEach((broj) => {
+                  broj = parseInt(broj);
+                  //console.log(broj);
+                  brojevi.push(broj);
+                });
+              });
+              //console.log(brojevi);
+              var tablica39 = [];
+              for (let i = 1; i <= 39; i++) tablica39[i] = 0;
+              brojevi.forEach((broj) => {
+                tablica39[broj]++;
+              });
+              //console.log(tablica39);
+              var sortiraniObjekti39 = [];
+              tablica39.forEach((t, i) => {
+                var obj = {
+                  broj: i,
+                  brojPojavljivanja: t,
+                };
+                sortiraniObjekti39.push(obj);
+              });
+              //console.log(sortiraniObjekti39);
+              for (let i = 0; i < sortiraniObjekti39.length - 1; i++) {
+                for (let j = i + 1; j < sortiraniObjekti39.length; j++) {
+                  if (
+                    sortiraniObjekti39[i].brojPojavljivanja >
+                    sortiraniObjekti39[j].brojPojavljivanja
+                  ) {
+                    let tmp = sortiraniObjekti39[i];
+                    sortiraniObjekti39[i] = sortiraniObjekti39[j];
+                    sortiraniObjekti39[j] = tmp;
+                  }
                 }
               }
-            }
-            console.log(sortiraniObjekti39);
+              console.log(sortiraniObjekti39);
 
-            var dobitnaKombinacija = [];
-            for (let i = 0; i < 7; i++) {
-              dobitnaKombinacija.push(sortiraniObjekti39[i].broj);
-            }
-            console.log(dobitnaKombinacija);
-            //res.send(dobitnaKombinacija);
-            var dobitnaText = "";
-            dobitnaKombinacija.forEach((db,ind) => {
-              if(ind==dobitnaKombinacija.length-1)
-                dobitnaText += db.toString();
-              else
-                dobitnaText += db.toString() + " ";
-            });
-            console.log(dobitnaText);
-            var query5 =
-              'UPDATE "Kolo" SET dobitnakombinacija=' +
-              "'" +
-              dobitnaText +
-              "' WHERE idkola=?";
-            console.log(query5);
-            client.execute(query5, params, function (err, result) {
-              if (!err) {
-                console.log("Dobitna kombinacija generisana");
+              var dobitnaKombinacija = [];
+              for (let i = 0; i < 7; i++) {
+                dobitnaKombinacija.push(sortiraniObjekti39[i].broj);
               }
+              console.log(dobitnaKombinacija);
+              //res.send(dobitnaKombinacija);
+              var dobitnaText = "";
+              dobitnaKombinacija.forEach((db, ind) => {
+                if (ind == dobitnaKombinacija.length - 1)
+                  dobitnaText += db.toString();
+                else dobitnaText += db.toString() + " ";
+              });
+              console.log(dobitnaText);
+              var query5 =
+                'UPDATE "Kolo" SET dobitnakombinacija=' +
+                "'" +
+                dobitnaText +
+                "' WHERE idkola=?";
+              console.log(query5);
+              client.execute(query5, params, function (err, result) {
+                if (!err) {
+                  console.log("Dobitna kombinacija generisana");
+                }
+              });
             });
+            // }
           });
-          // }
-        });
-      }
-    );
+        }
+      );
+    });
+    //});
   });
-  //});
 });
 //Iz baze vidi kad pocinje novo kolo
 app.get("/vratiPocetakKola", function (req, res) {
-
   /*const pocetakKola = new Date();
   pocetakKola.setSeconds(pocetakKola.getSeconds() + 15);
   console.log(pocetakKola);
   res.send(pocetakKola);*/
   var query1 = 'SELECT datum FROM "Kolo" limit 1';
   client.execute(query1, function (err, result) {
-    console.log(result.rows[0]["datum"])
+    console.log(result.rows[0]["datum"]);
     res.json(result.rows[0]["datum"]);
   });
-
 });
 //Kombinacija izvucena kao dobitna
 app.get("/vratiKombinaciju", function (req, res) {
   //let niz = [6, 24, 11, 8, 11, 13, 26];
-  
+
   var query1 = 'SELECT dobitnakombinacija FROM "Kolo" limit 1';
   client.execute(query1, function (err, result) {
     var brojevi = [];
-    var kombinacija = result.rows[0]["dobitnakombinacija"]
+    var kombinacija = result.rows[0]["dobitnakombinacija"];
     brojevi = kombinacija.split(" ");
 
-  
     res.json(brojevi);
   });
   //res.send(niz);
