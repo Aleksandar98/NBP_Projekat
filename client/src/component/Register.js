@@ -34,7 +34,7 @@ const Register = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
 
   function allLetter(inputtxt) {
-    var letters = /^[A-Za-z]+$/;
+    var letters = /^[a-z]+$/;
     if (inputtxt.match(letters)) {
       return true;
     } else {
@@ -48,7 +48,7 @@ const Register = () => {
       swal('Lozinke se ne poklapaju');
     } else {
       if (!allLetter(username)) {
-        swal('Opseg vrednosti username-a mora biti: a-zA-Z');
+        swal('Opseg vrednosti username-a mora biti: a-z');
         return;
       }
 
