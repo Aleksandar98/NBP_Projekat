@@ -22,10 +22,13 @@ const Login = () => {
       password,
     };
     try {
-      const res = await axios.post('http://localhost:5000/provera', zaSlanje);
+      const res = await axios.post("http://localhost:5000/provera", zaSlanje);
       console.log(res.data);
-      localStorage.setItem('username', res.data.username);
-      history.push('/profile');
+      localStorage.setItem("username", res.data.username);
+      localStorage.setItem("kredit", res.data.kredit);
+      localStorage.setItem("email", res.data.email);
+      localStorage.setItem("password", res.data.password);
+      history.push("/profile");
     } catch (err) {
       console.log(err);
     }
