@@ -15,5 +15,6 @@ Loto web aplikacija napravljena koriscenjem u Node.js-a i React-a
 npm run dev
 ```
 ## Live izvlacenje
+![gif](https://s2.gifyu.com/images/ezgif-1-e3ae9ab07b30.gif)
 
 ## Prikaz rezultata proslog kola
