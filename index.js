@@ -6,6 +6,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 var _ = require('lodash');
+const stripe = require('stripe')('sk_test_sUstB2DOxltM0BQWQileYGJH00sj8TZfzI');
 
 app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -69,6 +70,13 @@ app.post('/createkorisnik', function (req, res) {
 });
 
 app.put("/uplatiKredit", async function (req, res) {
+  const charge = await stripe.charges.create({
+    amount: 100 * parseInt(req.body.iznos),
+    currency: 'rsd',
+    description: 'Uplata kredita',
+    source: req.body.tokenZaUplatu.id,
+  });
+
   let uplata = parseInt(req.body.iznos);
   let korisnik = req.body.korisnik;
   let username = req.body.username;
@@ -617,16 +625,16 @@ app.get('/vratiKombinaciju', function (req, res) {
   //res.send(niz);
 });
 
-app.post("/proveriDobitnike", function(req, res) {
+app.post("/proveriDobitnike", async function(req, res) {
   var dobitnaKombinacijaQuery = 'SELECT dobitnakombinacija, idkola FROM "Kolo" limit 1';
-  client.execute(dobitnaKombinacijaQuery, function(err, result) {
+  await client.execute(dobitnaKombinacijaQuery, async function(err, result) {
     var brojevi = [];
     var kombinacija = result.rows[0]["dobitnakombinacija"];
     var idKola = result.rows[0]["idkola"];
     brojevi = kombinacija.split(" ");
 
     var kombinacijeQuery = 'SELECT * from "Kombinacija_By_Kolo" WHERE idkola=' + "'" + idKola + "'";
-    client.execute(kombinacijeQuery, function(err, result) {
+    await client.execute(kombinacijeQuery, async function(err, result) {
       var brojevi1 = []
       var odigranaKombinacija = [];
       var rezultat = [];
@@ -651,13 +659,13 @@ app.post("/proveriDobitnike", function(req, res) {
         console.log(rezultat[username], username);
         let query = 'SELECT ' + username + ' FROM "Dobitak_By_Kolo"';
 
-        client.execute(query, function(err, result) {
+       client.execute(query, async function(err, result) {
           if (result === undefined) {
           let query1 = 'ALTER TABLE "Dobitak_By_Kolo" ADD ' + username + " text ";
-          client.execute(query1);
+          await client.execute(query1);
           }
           let inputQuery = 'INSERT INTO "Dobitak_By_Kolo" (idkola,' + username +') VALUES (' + "'" + idKola + "'" + ', ' + "'" + rezultat[username] + "'" + ')';
-          client.execute(inputQuery);
+          await client.execute(inputQuery);
         });
       })
     })

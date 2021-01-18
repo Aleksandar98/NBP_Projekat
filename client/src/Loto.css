@@ -674,3 +674,13 @@ button {
   -webkit-transform: rotateX(360deg) translateZ(30vw);
   transform: rotateX(360deg) translateZ(30vw);
 }
+
+.uplata{
+  display: flex;
+  flex-direction: row;
+  margin-top: .5rem;
+}
+
+.uplataDugme{
+  margin-left: 10px;
+}

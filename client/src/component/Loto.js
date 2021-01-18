@@ -2,6 +2,7 @@ import React, { Fragment, useState, useEffect } from 'react';
 import swal from 'sweetalert';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import StripeCheckout from "react-stripe-checkout";
 
 const Loto = (props) => {
   const [formData, setFormData] = useState({
@@ -11,6 +12,11 @@ const Loto = (props) => {
   });
 
   const { trenutnoOdigrano, kredit, username } = formData;
+
+  const oderdiVrednost = () => {
+    if (document.getElementById('uplataInput') != null)
+    return parseInt(document.getElementById('uplataInput').value);
+  }
 
   const Klik = (e) => {
     for (let i = 0; i < trenutnoOdigrano.length; i++) {
@@ -113,33 +119,41 @@ const Loto = (props) => {
     }
   };
 
-  const uplatiNovac = (e) => {
-    swal('Uplati na racun', {
-      content: 'input',
-    }).then((value) => {
-      console.log(formData.kredit[0], localStorage.getItem("kredit"));
-      let uplata = {
-        iznos: value,
-        korisnik: localStorage.getItem("email"),
-        username: localStorage.getItem("username"),
-        kredit: formData.kredit[0],
-        password: localStorage.getItem("password"),
-      };
-      try {
-        console.log(formData);
-        const res = axios.put("http://localhost:5000/uplatiKredit", uplata);
-      } catch (err) {
-        console.log(err);
-      }
-      setFormData({
-        ...formData,
-        kredit: [parseInt(kredit[0]) + parseInt(value)],
-      });
-
-      localStorage.setItem("kredit", parseInt(kredit[0]) + parseInt(value));
-      swal(`Uplaceno: ${value}`);
+  const azuriraj = (e) => {
+    setFormData({
+      ...formData,
+      kredit: [parseInt(kredit[0]) + parseInt(document.getElementById('uplataInput').value)],
     });
-  };
+    localStorage.setItem("kredit", parseInt(kredit[0]) + parseInt(document.getElementById('uplataInput').value));
+  }
+
+  // const uplatiNovac = (e) => {
+  //   swal('Uplati na racun', {
+  //     content: 'input',
+  //   }).then((value) => {
+  //     console.log(formData.kredit[0], localStorage.getItem("kredit"));
+  //     let uplata = {
+  //       iznos: value,
+  //       korisnik: localStorage.getItem("email"),
+  //       username: localStorage.getItem("username"),
+  //       kredit: formData.kredit[0],
+  //       password: localStorage.getItem("password"),
+  //     };
+  //     try {
+  //       console.log(formData);
+  //       const res = axios.put("http://localhost:5000/uplatiKredit", uplata);
+  //     } catch (err) {
+  //       console.log(err);
+  //     }
+      // setFormData({
+      //   ...formData,
+      //   kredit: [parseInt(kredit[0]) + parseInt(value)],
+      // });
+
+      // localStorage.setItem("kredit", parseInt(kredit[0]) + parseInt(value));
+  //     swal(`Uplaceno: ${value}`);
+  //   });
+  // };
 
   return (
     <Fragment>
@@ -498,13 +512,32 @@ const Loto = (props) => {
             >
               Odigraj automatksi
             </button>
-            <button
-              type="button"
-              className="btn btn-dark btn-block"
-              onClick={(e) => uplatiNovac(e)}
+            
+            <div className='uplata'>
+            <input id='uplataInput' className='form-control'></input>
+            <StripeCheckout
+              name="Loto uplata"
+              description="Uplata kredita"
+              amount= {0}
+              token={(token) => axios.put("/uplatiKredit", {
+                      iznos: oderdiVrednost(),
+                      korisnik: localStorage.getItem("email"),
+                      username: localStorage.getItem("username"),
+                      kredit: formData.kredit[0],
+                      password: localStorage.getItem("password"),
+                      tokenZaUplatu : token
+                    })}
+              stripeKey="pk_test_ORiqE7eJwIAbmJSSiJCMu0Fr00o4UEmm2V"
             >
-              Uplati na račun
-            </button>
+              <button
+                type="button"
+                className="btn btn-dark btn-block uplataDugme"
+                onClick={(e) => azuriraj(e)}
+              >
+                Uplati na račun
+              </button>
+            </StripeCheckout>
+            </div>
           </div>
         </div>
       </div>
