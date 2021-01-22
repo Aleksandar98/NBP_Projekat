@@ -681,6 +681,7 @@ button {
   margin-top: .5rem;
 }
 
-.uplataDugme{
-  margin-left: 10px;
+#isplata {
+  max-width: 150px;
+  margin-left: 670px;
 }

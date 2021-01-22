@@ -13,44 +13,30 @@ const Loto = (props) => {
 
   const { trenutnoOdigrano, kredit, username } = formData;
 
-const isplataDobitnika = (e) => {
-  const zaSlanje = {
-    username: username,
-    kredit: parseInt(kredit[0]),
-    email: localStorage.getItem("email"),
-    password: localStorage.getItem("password"),
-  };
-  try {
-    const res = axios.put("http://localhost:5000/isplatiDobitnike", zaSlanje);
-  } catch (err) {
-    console.log(err);
-  }
-}; 
-
   const oderdiVrednost = () => {
-    if (document.getElementById('uplataInput') != null)
-    return parseInt(document.getElementById('uplataInput').value);
-  }
+    if (document.getElementById("uplataInput") != null)
+      return parseInt(document.getElementById("uplataInput").value);
+  };
 
   const Klik = (e) => {
     for (let i = 0; i < trenutnoOdigrano.length; i++) {
-      if (trenutnoOdigrano[i] == e.target.parentElement.getAttribute('value')) {
-        swal('Greska', 'Vec si taj broj odigrao', 'error');
+      if (trenutnoOdigrano[i] == e.target.parentElement.getAttribute("value")) {
+        swal("Greska", "Vec si taj broj odigrao", "error");
         return;
       }
     }
     if (trenutnoOdigrano.length == 7) {
-      swal('Greska', 'Vec ste izabrali 7 brojeva!', 'error');
+      swal("Greska", "Vec ste izabrali 7 brojeva!", "error");
       return;
     }
     console.log(e.target);
 
     //console.log(e.target.parentElement.getAttribute('value'));
-    trenutnoOdigrano.push(e.target.parentElement.getAttribute('value'));
+    trenutnoOdigrano.push(e.target.parentElement.getAttribute("value"));
     //console.log(trenutnoOdigrano, trenutnoOdigrano.length);
-    document.querySelectorAll('.dot')[
+    document.querySelectorAll(".dot")[
       trenutnoOdigrano.length - 1
-    ].innerHTML = e.target.parentElement.getAttribute('value');
+    ].innerHTML = e.target.parentElement.getAttribute("value");
   };
   const uplati = (e) => {
     if (kredit[0] < 100) {
@@ -78,10 +64,8 @@ const isplataDobitnika = (e) => {
         });
         localStorage.setItem("kredit", parseInt(kredit[0]) - 100);
 
-        const niz = trenutnoOdigrano
-          .toString()
-          .replaceAll(",", " ");
-          console.log(kredit[0]);
+        const niz = trenutnoOdigrano.toString().replaceAll(",", " ");
+        console.log(kredit[0]);
         const zaSlanje = {
           kombinacija: niz,
           idkorisnika: username,
@@ -116,7 +100,7 @@ const isplataDobitnika = (e) => {
     }
 
     for (let i = 0; i < 7; i++) {
-      document.querySelectorAll('.dot')[i].innerHTML = trenutnoOdigrano[i];
+      document.querySelectorAll(".dot")[i].innerHTML = trenutnoOdigrano[i];
     }
   };
 
@@ -129,17 +113,24 @@ const isplataDobitnika = (e) => {
     }
 
     for (let i = 0; i < 7; i++) {
-      document.querySelectorAll('.dot')[i].innerHTML = '';
+      document.querySelectorAll(".dot")[i].innerHTML = "";
     }
   };
 
   const azuriraj = (e) => {
     setFormData({
       ...formData,
-      kredit: [parseInt(kredit[0]) + parseInt(document.getElementById('uplataInput').value)],
+      kredit: [
+        parseInt(kredit[0]) +
+          parseInt(document.getElementById("uplataInput").value),
+      ],
     });
-    localStorage.setItem("kredit", parseInt(kredit[0]) + parseInt(document.getElementById('uplataInput').value));
-  }
+    localStorage.setItem(
+      "kredit",
+      parseInt(kredit[0]) +
+        parseInt(document.getElementById("uplataInput").value)
+    );
+  };
 
   // const uplatiNovac = (e) => {
   //   swal('Uplati na racun', {
@@ -159,12 +150,12 @@ const isplataDobitnika = (e) => {
   //     } catch (err) {
   //       console.log(err);
   //     }
-      // setFormData({
-      //   ...formData,
-      //   kredit: [parseInt(kredit[0]) + parseInt(value)],
-      // });
+  // setFormData({
+  //   ...formData,
+  //   kredit: [parseInt(kredit[0]) + parseInt(value)],
+  // });
 
-      // localStorage.setItem("kredit", parseInt(kredit[0]) + parseInt(value));
+  // localStorage.setItem("kredit", parseInt(kredit[0]) + parseInt(value));
   //     swal(`Uplaceno: ${value}`);
   //   });
   // };
@@ -526,31 +517,33 @@ const isplataDobitnika = (e) => {
             >
               Odigraj automatksi
             </button>
-            
-            <div className='uplata'>
-            <input id='uplataInput' className='form-control'></input>
-            <StripeCheckout
-              name="Loto uplata"
-              description="Uplata kredita"
-              amount= {0}
-              token={(token) => axios.put("/uplatiKredit", {
-                      iznos: oderdiVrednost(),
-                      korisnik: localStorage.getItem("email"),
-                      username: localStorage.getItem("username"),
-                      kredit: formData.kredit[0],
-                      password: localStorage.getItem("password"),
-                      tokenZaUplatu : token
-                    })}
-              stripeKey="pk_test_ORiqE7eJwIAbmJSSiJCMu0Fr00o4UEmm2V"
-            >
-              <button
-                type="button"
-                className="btn btn-dark btn-block uplataDugme"
-                onClick={(e) => azuriraj(e)}
+
+            <div className="uplata">
+              <input id="uplataInput" className="form-control"></input>
+              <StripeCheckout
+                name="Loto uplata"
+                description="Uplata kredita"
+                amount={0}
+                token={(token) =>
+                  axios.put("/uplatiKredit", {
+                    iznos: oderdiVrednost(),
+                    korisnik: localStorage.getItem("email"),
+                    username: localStorage.getItem("username"),
+                    kredit: formData.kredit[0],
+                    password: localStorage.getItem("password"),
+                    tokenZaUplatu: token,
+                  })
+                }
+                stripeKey="pk_test_ORiqE7eJwIAbmJSSiJCMu0Fr00o4UEmm2V"
               >
-                Uplati na račun
-              </button>
-            </StripeCheckout>
+                <button
+                  type="button"
+                  className="btn btn-dark btn-block uplataDugme"
+                  onClick={(e) => azuriraj(e)}
+                >
+                  Uplati na račun
+                </button>
+              </StripeCheckout>
             </div>
           </div>
         </div>

@@ -625,7 +625,175 @@ app.get('/vratiKombinaciju', function (req, res) {
   //res.send(niz);
 });
 
-app.post("/proveriDobitnike", async function(req, res) {
+// app.post("/proveriDobitnike", async function(req, res) {
+//   var dobitnaKombinacijaQuery = 'SELECT dobitnakombinacija, idkola FROM "Kolo" limit 1';
+//   await client.execute(dobitnaKombinacijaQuery, async function(err, result) {
+//     var brojevi = [];
+//     var kombinacija = result.rows[0]["dobitnakombinacija"];
+//     var idKola = result.rows[0]["idkola"];
+//     brojevi = kombinacija.split(" ");
+
+//     var kombinacijeQuery = 'SELECT * from "Kombinacija_By_Kolo" WHERE idkola=' + "'" + idKola + "'";
+//     await client.execute(kombinacijeQuery, async function(err, result) {
+//       var brojevi1 = []
+//       var odigranaKombinacija = [];
+//       var rezultat = [];
+
+//       result.rows[0].forEach((val, index)=> {
+//         odigranaKombinacija = val;
+//         brojevi1 = odigranaKombinacija.split(" ");
+//         let presek = brojevi.filter(x => brojevi1.includes(x));
+//         var user = index.split('_')[0];
+//         if (presek.length >= 3){
+//           if (rezultat[user] === undefined){
+//             rezultat[user] = '';
+//           }
+  
+//           rezultat[user] += presek.length + ' ';
+//         }
+//       })
+
+//       const usernames = Object.keys(rezultat);
+
+//       Object.values(usernames).forEach(username => {
+//         console.log(rezultat[username], username);
+//         let query = 'SELECT ' + username + ' FROM "Dobitak_By_Kolo"';
+
+//        client.execute(query, async function(err, result) {
+//           if (result === undefined) {
+//           let query1 = 'ALTER TABLE "Dobitak_By_Kolo" ADD ' + username + " text ";
+//           await client.execute(query1);
+//           }
+//           let inputQuery = 'INSERT INTO "Dobitak_By_Kolo" (idkola,' + username +') VALUES (' + "'" + idKola + "'" + ', ' + "'" + rezultat[username] + "'" + ')';
+//           await client.execute(inputQuery);
+//         });
+//       })
+//     })
+//   })
+// });
+
+app.get("/vratiDobitke", function (req, res) {
+  // kombinacije sa 7,6,5,4,3 pogodaka
+let niz = [];
+  let query = 'SELECT idkola FROM "Kolo" limit 1';
+  client.execute(query, function(err, result){
+    let idkola = Object.values(result.rows[0])[0];
+    let dobiciQuery = 'SELECT * FROM "Dobitak_By_Kolo" WHERE idkola=' + "'" + idkola + "'";
+
+    client.execute(dobiciQuery, function(err, result) {
+     let values = Object.values(result.rows[0]);
+     values.shift();
+     let allValues = '';
+     values.forEach(param => {
+        allValues += param;
+      });
+     let sedmice = allValues.split('7').length - 1;
+     let sestice = allValues.split('6').length - 1;
+     let petice = allValues.split('5').length - 1;
+     let cetvorke = allValues.split('4').length - 1;
+     let trojke = allValues.split('3').length - 1;
+
+      niz = [sedmice, sestice, petice, cetvorke, trojke];
+      
+      res.send(niz);
+    })
+  });
+});
+
+// app.put("/isplatiDobitnike", async function (req, res){
+//  await client.execute('SELECT vrednostsedmice FROM "Kolo" limit 1', async function(err,result){
+//     let vrednostSedmice = parseInt(Object.values(result.rows[0])[0]);
+    
+//   let query = 'SELECT * FROM "Dobitak_By_Kolo" limit 1';
+//   await client.execute(query, async function(err, result){
+//    result.rows[0].forEach((val, key) => {
+//      if (key === "idkola") {
+//        return;
+//      }
+//      let zaIsplatu = 0;
+//      let dobici = val.split(" ");
+//      dobici.pop();
+//      dobici.forEach((dobitak) => {
+//        switch (dobitak) {
+//          case "7":
+//            zaIsplatu += vrednostSedmice;
+//            break;
+//          case "6":
+//            zaIsplatu += vrednostSedmice * 0.1;
+//            break;
+//          case "5":
+//            zaIsplatu += vrednostSedmice * 0.05;
+//            break;
+//          case "4":
+//            zaIsplatu += 1000;
+//            break;
+//          case "3":
+//            zaIsplatu += 100;
+//            break;
+//        }
+//      });
+//      let korisniciQuery = 'SELECT * FROM "Korisnik"';
+//      client.execute(korisniciQuery,  function(err, result){
+//       let email = '';
+//       let password = '';
+//       let trenutnoStanje = '';
+//       let username = '';
+
+
+//        result.rows.forEach(row => {
+//          if (row.username == key) {
+//            email = row.email;
+//            password = row.password;
+//            trenutnoStanje = row.kredit;
+//            username = row.username;
+//          }
+//        })
+     
+//       const novoStanje = parseInt(trenutnoStanje) + zaIsplatu;
+
+//      let kreditQuery =
+//        'UPDATE "Korisnik" SET kredit=' +
+//        "'" +
+//        novoStanje +
+//        "' WHERE email='" +
+//        email +
+//        "'AND password='" +
+//        password +
+//        "'AND username='" +
+//        username  +
+//        "'";
+//      client.execute(kreditQuery);
+
+//      var transporter = nodemailer.createTransport({
+//        service: "gmail",
+//        auth: {
+//          user: "urossmm1@gmail.com",
+//          pass: "urosurosuros",
+//        },
+//      });
+//      var mailOptions = {
+//        from: "urossmm1@gmail.com",
+//        to: email,
+//        subject: "Cestitamo!",
+//        text:
+//          "Osvojili ste nagradu na najnovijem loto izvlacenju, uplaceno je " +
+//          zaIsplatu +
+//          "na Vas loto racun.",
+//      };
+
+//        transporter.sendMail(mailOptions, function (error, info) {
+//          if (error) {
+//            console.log(error);
+//          } else {
+//            console.log("Email sent: " + info.response);
+//          }
+//        });
+//    })})
+// })
+// })
+// });
+
+app.post('/izvrsiIsplatu', async function(req, res) {
   var dobitnaKombinacijaQuery = 'SELECT dobitnakombinacija, idkola FROM "Kolo" limit 1';
   await client.execute(dobitnaKombinacijaQuery, async function(err, result) {
     var brojevi = [];
@@ -666,120 +834,102 @@ app.post("/proveriDobitnike", async function(req, res) {
           }
           let inputQuery = 'INSERT INTO "Dobitak_By_Kolo" (idkola,' + username +') VALUES (' + "'" + idKola + "'" + ', ' + "'" + rezultat[username] + "'" + ')';
           await client.execute(inputQuery);
+          await client.execute('SELECT vrednostsedmice FROM "Kolo" limit 1', async function(err,result){
+            let vrednostSedmice = parseInt(Object.values(result.rows[0])[0]);
+            
+          let query = 'SELECT * FROM "Dobitak_By_Kolo" limit 1';
+          await client.execute(query, async function(err, result){
+           result.rows[0].forEach((val, key) => {
+             if (key === "idkola") {
+               return;
+             }
+             let zaIsplatu = 0;
+             let dobici = val.split(" ");
+             dobici.pop();
+             dobici.forEach((dobitak) => {
+               switch (dobitak) {
+                 case "7":
+                   zaIsplatu += vrednostSedmice;
+                   break;
+                 case "6":
+                   zaIsplatu += vrednostSedmice * 0.1;
+                   break;
+                 case "5":
+                   zaIsplatu += vrednostSedmice * 0.05;
+                   break;
+                 case "4":
+                   zaIsplatu += 1000;
+                   break;
+                 case "3":
+                   zaIsplatu += 100;
+                   break;
+               }
+             });
+             let korisniciQuery = 'SELECT * FROM "Korisnik"';
+             client.execute(korisniciQuery,  function(err, result){
+              let email = '';
+              let password = '';
+              let trenutnoStanje = '';
+              let username = '';
+        
+        
+               result.rows.forEach(row => {
+                 if (row.username == key) {
+                   email = row.email;
+                   password = row.password;
+                   trenutnoStanje = row.kredit;
+                   username = row.username;
+                 }
+               })
+             
+              const novoStanje = parseInt(trenutnoStanje) + zaIsplatu;
+        
+             let kreditQuery =
+               'UPDATE "Korisnik" SET kredit=' +
+               "'" +
+               novoStanje +
+               "' WHERE email='" +
+               email +
+               "'AND password='" +
+               password +
+               "'AND username='" +
+               username  +
+               "'";
+             client.execute(kreditQuery);
+        
+             var transporter = nodemailer.createTransport({
+               service: "gmail",
+               auth: {
+                 user: "urossmm1@gmail.com",
+                 pass: "urosurosuros",
+               },
+             });
+             var mailOptions = {
+               from: "urossmm1@gmail.com",
+               to: email,
+               subject: "Cestitamo!",
+               text:
+                 "Osvojili ste nagradu na najnovijem loto izvlacenju, uplaceno je " +
+                 zaIsplatu +
+                 "na Vas loto racun.",
+             };
+        
+               transporter.sendMail(mailOptions, function (error, info) {
+                 if (error) {
+                   console.log(error);
+                 } else {
+                   console.log("Email sent: " + info.response);
+                 }
+               });
+           })})
+        })
+        })
+
         });
       })
     })
   })
-});
-
-app.get("/vratiDobitke", function (req, res) {
-  // kombinacije sa 7,6,5,4,3 pogodaka
-let niz = [];
-  let query = 'SELECT idkola FROM "Kolo" limit 1';
-  client.execute(query, function(err, result){
-    let idkola = Object.values(result.rows[0])[0];
-    let dobiciQuery = 'SELECT * FROM "Dobitak_By_Kolo" WHERE idkola=' + "'" + idkola + "'";
-
-    client.execute(dobiciQuery, function(err, result) {
-     let values = Object.values(result.rows[0]);
-     values.shift();
-     let allValues = '';
-     values.forEach(param => {
-        allValues += param;
-      });
-     let sedmice = allValues.split('7').length - 1;
-     let sestice = allValues.split('6').length - 1;
-     let petice = allValues.split('5').length - 1;
-     let cetvorke = allValues.split('4').length - 1;
-     let trojke = allValues.split('3').length - 1;
-
-      niz = [sedmice, sestice, petice, cetvorke, trojke];
-      
-      res.send(niz);
-    })
-  });
-});
-
-app.put("/isplatiDobitnike", async function (req, res){
- await client.execute('SELECT vrednostsedmice FROM "Kolo" limit 1', async function(err,result){
-    let vrednostSedmice = parseInt(Object.values(result.rows[0])[0]);
-    
-  let query = 'SELECT * FROM "Dobitak_By_Kolo" limit 1';
-  await client.execute(query, function(err, result){
-   
-   result.rows[0].forEach((val, key) => {
-     if (key === "idkola") {
-       return;
-     }
-     let zaIsplatu = 0;
-     let dobici = val.split(" ");
-     dobici.pop();
-     dobici.forEach((dobitak) => {
-       switch (dobitak) {
-         case "7":
-           zaIsplatu += vrednostSedmice;
-           break;
-         case "6":
-           zaIsplatu += vrednostSedmice * 0.1;
-           break;
-         case "5":
-           zaIsplatu += vrednostSedmice * 0.05;
-           break;
-         case "4":
-           zaIsplatu += 1000;
-           break;
-         case "3":
-           zaIsplatu += 100;
-           break;
-       }
-     });
-
-     const email = req.body.email;
-     const password = req.body.password;
-     const trenutnoStanje = req.body.kredit;
-     const novoStanje = parseInt(trenutnoStanje) + zaIsplatu;
-
-     let kreditQuery =
-       'UPDATE "Korisnik" SET kredit=' +
-       "'" +
-       novoStanje +
-       "' WHERE email='" +
-       email +
-       "'AND password='" +
-       password +
-       "'AND username='" +
-       key +
-       "'";
-      client.execute(kreditQuery);
-
-     var transporter = nodemailer.createTransport({
-       service: "gmail",
-       auth: {
-         user: "urossmm1@gmail.com",
-         pass: "urosurosuros",
-       },
-     });
-     var mailOptions = {
-       from: "urossmm1@gmail.com",
-       to: email,
-       subject: "Cestitamo!",
-       text:
-         "Osvojili ste nagradu na najnovijem loto izvlacenju, uplaceno je " +
-         zaIsplatu +
-         "na Vas loto racun.",
-     };
-
-     transporter.sendMail(mailOptions, function (error, info) {
-       if (error) {
-         console.log(error);
-       } else {
-         console.log("Email sent: " + info.response);
-       }
-     });
-   })
 })
-})
-});
 
 app.get("/izracunajProfit", function(req, res) {
   client.execute('SELECT idkola, vrednostsedmice FROM "Kolo"', function (err,result){
