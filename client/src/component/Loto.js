@@ -13,6 +13,20 @@ const Loto = (props) => {
 
   const { trenutnoOdigrano, kredit, username } = formData;
 
+const isplataDobitnika = (e) => {
+  const zaSlanje = {
+    username: username,
+    kredit: parseInt(kredit[0]),
+    email: localStorage.getItem("email"),
+    password: localStorage.getItem("password"),
+  };
+  try {
+    const res = axios.put("http://localhost:5000/isplatiDobitnike", zaSlanje);
+  } catch (err) {
+    console.log(err);
+  }
+}; 
+
   const oderdiVrednost = () => {
     if (document.getElementById('uplataInput') != null)
     return parseInt(document.getElementById('uplataInput').value);

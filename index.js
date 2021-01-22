@@ -700,48 +700,46 @@ let niz = [];
   });
 });
 
-app.put("/isplatiDobitnike", function (req, res){
-  client.execute('SELECT vrednostsedmice FROM "Kolo" limit 1', function(err,result){
+app.put("/isplatiDobitnike", async function (req, res){
+ await client.execute('SELECT vrednostsedmice FROM "Kolo" limit 1', async function(err,result){
     let vrednostSedmice = parseInt(Object.values(result.rows[0])[0]);
     
   let query = 'SELECT * FROM "Dobitak_By_Kolo" limit 1';
-  client.execute(query, function(err, result){
+  await client.execute(query, function(err, result){
    
    result.rows[0].forEach((val, key) => {
-     if (key === 'idkola') {
+     if (key === "idkola") {
        return;
      }
      let zaIsplatu = 0;
      let dobici = val.split(" ");
      dobici.pop();
-     dobici.forEach(dobitak => {
-        switch (dobitak){
-          case '7':
-            zaIsplatu += vrednostSedmice;
-            break;
-          case '6':
-            zaIsplatu += vrednostSedmice * 0.1;
-            break;
-          case '5':
-            zaIsplatu += vrednostSedmice * 0.05;
-            break;
-          case '4':
-            zaIsplatu += 1000;
-            break;
-          case '3':
-            zaIsplatu += 100;
-            break;
-        } 
-        
-     })
-     client.execute('SELECT * from "Korisnik" where username=' + "'" + key + "' ALLOW FILTERING", function(err, result){
-        // const trenutnoStanje = Object.values(result.rows[0])[0];
-       const email = Object.values(result.rows[0])[0];
-       const password = Object.values(result.rows[0])[1];
-       const trenutnoStanje = Object.values(result.rows[0])[4];
-       const novoStanje = parseInt(trenutnoStanje) + zaIsplatu;
+     dobici.forEach((dobitak) => {
+       switch (dobitak) {
+         case "7":
+           zaIsplatu += vrednostSedmice;
+           break;
+         case "6":
+           zaIsplatu += vrednostSedmice * 0.1;
+           break;
+         case "5":
+           zaIsplatu += vrednostSedmice * 0.05;
+           break;
+         case "4":
+           zaIsplatu += 1000;
+           break;
+         case "3":
+           zaIsplatu += 100;
+           break;
+       }
+     });
 
-       let kreditQuery =
+     const email = req.body.email;
+     const password = req.body.password;
+     const trenutnoStanje = req.body.kredit;
+     const novoStanje = parseInt(trenutnoStanje) + zaIsplatu;
+
+     let kreditQuery =
        'UPDATE "Korisnik" SET kredit=' +
        "'" +
        novoStanje +
@@ -754,31 +752,31 @@ app.put("/isplatiDobitnike", function (req, res){
        "'";
       client.execute(kreditQuery);
 
-      var transporter = nodemailer.createTransport({
-        service: "gmail",
-        auth: {
-          user: "urossmm1@gmail.com",
-          pass: "urosurosuros",
-        },
-      });
-        var mailOptions = {
-          from: "urossmm1@gmail.com",
-          to: email,
-          subject: "Cestitamo!",
-          text:
-            "Osvojili ste nagradu na najnovijem loto izvlacenju, uplaceno je " + zaIsplatu + "na Vas loto racun.",
-        };
+     var transporter = nodemailer.createTransport({
+       service: "gmail",
+       auth: {
+         user: "urossmm1@gmail.com",
+         pass: "urosurosuros",
+       },
+     });
+     var mailOptions = {
+       from: "urossmm1@gmail.com",
+       to: email,
+       subject: "Cestitamo!",
+       text:
+         "Osvojili ste nagradu na najnovijem loto izvlacenju, uplaceno je " +
+         zaIsplatu +
+         "na Vas loto racun.",
+     };
 
-        transporter.sendMail(mailOptions, function (error, info) {
-          if (error) {
-            console.log(error);
-          } else {
-            console.log("Email sent: " + info.response);
-          }
-        });
-
-    });
-  })
+     transporter.sendMail(mailOptions, function (error, info) {
+       if (error) {
+         console.log(error);
+       } else {
+         console.log("Email sent: " + info.response);
+       }
+     });
+   })
 })
 })
 });
