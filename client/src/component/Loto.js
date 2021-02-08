@@ -1,8 +1,12 @@
+
 import React, { Fragment, useState, useEffect } from 'react';
 import swal from 'sweetalert';
-import { Link } from 'react-router-dom';
+//import { Link } from 'react-router-dom';
 import axios from 'axios';
 import StripeCheckout from "react-stripe-checkout";
+import { Link, Redirect, useHistory } from 'react-router-dom';
+
+
 
 const Loto = (props) => {
   const [formData, setFormData] = useState({
@@ -10,6 +14,8 @@ const Loto = (props) => {
     kredit: [localStorage.getItem("kredit")],
     username: localStorage.getItem("username"),
   });
+
+  const history = useHistory();
 
   const { trenutnoOdigrano, kredit, username } = formData;
 
@@ -26,7 +32,7 @@ const Loto = (props) => {
       }
     }
     if (trenutnoOdigrano.length == 7) {
-      swal("Greska", "Vec ste izabrali 7 brojeva!", "error");
+      swal("Greska", "Vec ste izabrali 7 brojeva!", "error"); 
       return;
     }
     console.log(e.target);
@@ -39,6 +45,7 @@ const Loto = (props) => {
     ].innerHTML = e.target.parentElement.getAttribute("value");
   };
   const uplati = (e) => {
+    console.log('Kliknut sam'.green.inverse);
     if (kredit[0] < 100) {
       swal("Minimalna uplata je 100");
       return;
@@ -96,7 +103,11 @@ const Loto = (props) => {
     }
 
     for (let i = 0; i < 7; i++) {
-      trenutnoOdigrano.push(Math.floor(Math.random() * 40) + 1);
+      let pom= (Math.floor(Math.random() * 39) + 1);
+      if(!trenutnoOdigrano.includes(pom))
+        trenutnoOdigrano.push(pom);
+      else
+        i--; //posto sadrzi onda ponovi opet samo sa nekim drugim brojem
     }
 
     for (let i = 0; i < 7; i++) {
@@ -117,7 +128,7 @@ const Loto = (props) => {
     }
   };
 
-  const azuriraj = (e) => {
+  const azuriraj = () => {
     setFormData({
       ...formData,
       kredit: [
@@ -132,6 +143,31 @@ const Loto = (props) => {
     );
   };
 
+  const obrisiNalog = (e) => {
+    try {
+      swal({
+        title: "Da li ste sigurni?",
+        text: "Ukoliko obrisete nalog gubite sav novac na njemu",
+        icon: "warning",
+        buttons: true,
+        dangerMode: true,
+      }).then((willDelete) => {
+      if(willDelete){
+        const zaSlanje={
+          email: localStorage.getItem("email")
+        }
+        axios.post(
+          "http://localhost:5000/deleteNalog",
+          zaSlanje
+        )
+        history.push("/login");
+      }
+    }) 
+  }
+  catch (err) {
+    console.log(err);
+  }
+}
   // const uplatiNovac = (e) => {
   //   swal('Uplati na racun', {
   //     content: 'input',
@@ -169,6 +205,9 @@ const Loto = (props) => {
         <a className="navbar-brand" href="#">
           Stanje na računu: {kredit[0]} <i class="fas fa-dollar-sign fa-fw"></i>
         </a>
+        <Link className="navbar-brand" to="/">
+          Sledece izvlacenje <i class="fas fa-stopwatch fa-fw"></i>
+        </Link>
         <Link className="navbar-brand" to="/login">
           Logout <i class="fas fa-sign-out-alt fa-fw"></i>
         </Link>
@@ -524,7 +563,7 @@ const Loto = (props) => {
                 name="Loto uplata"
                 description="Uplata kredita"
                 amount={0}
-                token={(token) =>
+                token={(token) => {
                   axios.put("/uplatiKredit", {
                     iznos: oderdiVrednost(),
                     korisnik: localStorage.getItem("email"),
@@ -533,13 +572,16 @@ const Loto = (props) => {
                     password: localStorage.getItem("password"),
                     tokenZaUplatu: token,
                   })
+                  .then(() => azuriraj());
+                }
+                 
                 }
                 stripeKey="pk_test_ORiqE7eJwIAbmJSSiJCMu0Fr00o4UEmm2V"
               >
                 <button
                   type="button"
                   className="btn btn-dark btn-block uplataDugme"
-                  onClick={(e) => azuriraj(e)}
+                  //onClick={(e) => azuriraj(e)}
                 >
                   Uplati na račun
                 </button>
@@ -548,6 +590,7 @@ const Loto = (props) => {
           </div>
         </div>
       </div>
+      <Link onClick={(e)=> obrisiNalog(e)}>Obrisi nalog</Link>
     </Fragment>
   );
 };

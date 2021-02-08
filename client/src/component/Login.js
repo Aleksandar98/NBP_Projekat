@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, Redirect, useHistory } from 'react-router-dom';
 import axios from 'axios';
+import swal from 'sweetalert';
 
 const Login = () => {
   const [formData, setFormData] = useState({
@@ -24,6 +25,10 @@ const Login = () => {
     try {
       const res = await axios.post("http://localhost:5000/provera", zaSlanje);
       console.log(res.data);
+      if(res.data==false){
+        swal("Greska", "Unesite validne podatke", "error");
+        return;
+      }
       localStorage.setItem("username", res.data.username);
       localStorage.setItem("kredit", res.data.kredit);
       localStorage.setItem("email", res.data.email);

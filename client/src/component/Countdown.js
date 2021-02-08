@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import PropTypes from "prop-types";
+import swal from 'sweetalert';
 class Countdown extends Component {
   constructor(props) {
     super(props);
@@ -20,6 +21,10 @@ class Countdown extends Component {
         (result) => {
           // this.setState({kombinacija: result})
           console.log(result);
+          if(result==false){
+            swal("Trenutno sistem nije u funkciji, pokusajte uskoro ponovo!");
+            return;
+          } 
           this.interval = setInterval(() => {
             const date = this.calculateCountdown(result);
             date ? this.setState(date) : this.stop();
@@ -39,7 +44,7 @@ class Countdown extends Component {
       );
   }
 
-  componentWillUnmount() {
+  componentWillUnmount() { 
     this.stop();
   }
 

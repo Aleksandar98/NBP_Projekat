@@ -1,4 +1,5 @@
 const express = require('express');
+require('colors');
 const app = express();
 const cassandra = require('cassandra-driver');
 //var cql = require('node-cassandra-cql');
@@ -12,15 +13,33 @@ app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-const KEYSPACE = "lotto_schema";
+const KEYSPACE = "loto";
 const client = new cassandra.Client({
   contactPoints: ["127.0.0.1"],
-  keyspace: "lotto_schema",
+  keyspace: "loto",
   localDataCenter: "datacenter1",
 });
 
+function popravi(str) {
+  let ime = str.replace(/_/g, '');
+  ime = ime.replace(/\./g, '');
+  ime = ime.replace(/[0-9]/g, '');
+  ime = ime.replace(/,/g, '');
+  ime = ime.replace(/[A-Z]/g, (pogodak) => pogodak.toLowerCase());
+  console.log("Iz fje " + ime);
+  return ime;
+  /*str.replace(/_/g, '');
+  str.replace(/\./g, '');
+  str.replace(/[0-9]/g, '');
+  str.replace(/,/g, '');
+  str.replace(/[A-Z]/g, (pogodak) => pogodak.toLowerCase());*/
+}
+// popravi('_danilo.t,erZIc234234');
 app.post('/createkorisnik', function (req, res) {
   var korisnik = req.body;
+  korisnik.username= korisnik.email.substring(0, korisnik.email.indexOf('@'));
+  korisnik.username=popravi(korisnik.username);
+  console.log(korisnik.username);
   console.log('korisnik:', korisnik);
 
   let params = [req.body.email];
@@ -99,22 +118,24 @@ app.put("/uplatiKredit", async function (req, res) {
   });
 });
 
-app.post("/provera", function (req, res) {
+app.post("/provera",  function (req, res) {
   console.log(req.body);
   var email = req.body.email;
   var password = req.body.password;
-  let params = [email, password];
-  var query = 'SELECT * FROM "Korisnik" WHERE email= ? AND password= ?';
+  var username= email.substring(0,email.indexOf('@'));
+  username=popravi(username);
+  let params = [email, password, username];
+  var query = 'SELECT * FROM "Korisnik" WHERE email= ? AND password= ? AND username=?';
   console.log(query);
   console.log(params);
   client.execute(query, params, function (err, result) {
     if (err) {
       console.log('Greska');
-      res.send(err);
+      res.json(false);
       return;
     }
     console.log(result.rows[0]);
-    if (result.rows[0] == undefined) res.json({ msg: 'Greska pri logovanju' });
+    if (result.rows[0] == undefined) res.json(false);
     else res.json(result.rows[0]);
   });
 });
@@ -150,21 +171,21 @@ let shell = require('shelljs');
 
 // Kreira novo kolo
 
-cron.schedule('50 25 18 * * Fri', async function () {
+cron.schedule('50 09 00 * * Tue', async function () {
   var today = new Date();
   today.setDate(today.getDate() + 7);
   var dd = today.getDate().toString().padStart(2, '0');
   var mm = (today.getMonth() + 1).toString().padStart(2, '0');
   var yyyy = today.getFullYear();
   //var dat = yyyy + "-" + mm + "-" + dd;
-  var dat = today.toString();
+  var dat = today.toString(); 
 
   let query = 'select count(*) from "Kolo"';
   //let newId=0;
   await client.execute(query, async function (err, result) {
     //if(result.rows[0]!=undefined)
     //newId= parseInt(result.rows[0].idkola);
-    //console.log(result.rows[0].idkola);
+    //console.log(result.rows[0].idkola); 
     console.log('rez ' + result.first()['count']);
     let newId = parseInt(result.first()['count']) + 1;
 
@@ -239,6 +260,7 @@ cron.schedule('50 25 18 * * Fri', async function () {
         });
 
         today.setDate(today.getDate() + 7);
+        today.setMinutes(today.getMinutes() -1);
         console.log(today);
         return today;
       }
@@ -272,6 +294,7 @@ app.put('/uplatiKombinaciju', async (req, res) => {
   var query1 = 'select idkola from "Kolo" limit 1';
   await client.execute(query1, async function (err, result) {
     //let params= [parseInt(result.first()['count']).toString()];
+    if(result.rows[0]==undefined) return; //ako ne postoji nijedno kolo
     let params = [result.rows[0]['idkola']];
     console.log('params ' + params);
     //console.log(result);
@@ -431,13 +454,14 @@ app.put('/uplatiKombinaciju', async (req, res) => {
   });
 });
 
-cron.schedule('00 17 * * Thu', async function () {
+cron.schedule('00 57 16 * * Mon', async function () {
   var query1 = 'select count(*) from "Kolo"';
   await client.execute(query1, async function (err, result) {
     if (err) {
       console.log(err);
       return;
     }
+    if (parseInt(result.first()['count']) == 0) return;
     let params2 = ['zatvoreno', parseInt(result.first()['count']).toString()];
     var queryUpdate = 'UPDATE "Kolo" SET stanje= ? WHERE idkola= ? ';
     await client.execute(queryUpdate, params2, async function (err, result) {
@@ -450,13 +474,28 @@ cron.schedule('00 17 * * Thu', async function () {
   });
 });
 
+
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  while (0 !== currentIndex) {
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
 //Izvlaci dobitnu kombinaciju za tekuce kolo
 
-cron.schedule('50 38 18 * * Fri', async function () {
+cron.schedule('00 18 18 * * Mon', async function () {
   var query0 = 'SELECT COUNT(*) FROM "Kolo"';
   await client.execute(query0, async function (err, result) {
     console.log('TEST');
-    //console.log(result.first()["count"]);
+    //console.log(result.first()["count"]); 
     console.log(parseInt(result.first()['count']));
     if (parseInt(result.first()['count']) == 0) return;
 
@@ -501,7 +540,7 @@ cron.schedule('50 38 18 * * Fri', async function () {
               var tmpuser = user;
               var count = result.rows[0][key];
               for (let i = 1; i <= count; i++) {
-                user += i;
+                user += i; 
                 //if(ind!=keysLenght && i!=count)
                 //user+=" ,"
                 zaCitanje.push(user);
@@ -570,6 +609,7 @@ cron.schedule('50 38 18 * * Fri', async function () {
                 dobitnaKombinacija.push(sortiraniObjekti39[i].broj);
               }
               console.log(dobitnaKombinacija);
+              shuffle(dobitnaKombinacija);
               //res.send(dobitnaKombinacija);
               var dobitnaText = '';
               dobitnaKombinacija.forEach((db, ind) => {
@@ -604,10 +644,12 @@ app.get('/vratiPocetakKola', function (req, res) {
   pocetakKola.setSeconds(pocetakKola.getSeconds() + 15);
   console.log(pocetakKola);
   res.send(pocetakKola);*/
-  var query1 = 'SELECT datum FROM "Kolo" limit 1';
+  var query1 = 'SELECT datum FROM "Kolo" limit 1'; 
   client.execute(query1, function (err, result) {
-    console.log(result.rows[0]['datum']);
-    res.json(result.rows[0]['datum']);
+    console.log(result.rows); 
+    if(result.rows[0]!=undefined)
+      res.json(result.rows[0]['datum']);
+    else res.json(false);
   });
 });
 //Kombinacija izvucena kao dobitna
@@ -679,8 +721,12 @@ let niz = [];
   client.execute(query, function(err, result){
     let idkola = Object.values(result.rows[0])[0];
     let dobiciQuery = 'SELECT * FROM "Dobitak_By_Kolo" WHERE idkola=' + "'" + idkola + "'";
-
+    console.log(dobiciQuery);
     client.execute(dobiciQuery, function(err, result) {
+      if(result.rows[0]==undefined || result.rows==null) {
+        res.json([0,0,0,0,0]);
+        return;
+      }
      let values = Object.values(result.rows[0]);
      values.shift();
      let allValues = '';
@@ -690,7 +736,7 @@ let niz = [];
      let sedmice = allValues.split('7').length - 1;
      let sestice = allValues.split('6').length - 1;
      let petice = allValues.split('5').length - 1;
-     let cetvorke = allValues.split('4').length - 1;
+     let cetvorke = allValues.split('4').length - 1;  
      let trojke = allValues.split('3').length - 1;
 
       niz = [sedmice, sestice, petice, cetvorke, trojke];
@@ -975,6 +1021,26 @@ app.get("/izracunajProfit", function(req, res) {
   });
 
 });
+
+app.post('/deleteNalog', function (req,res){
+  let params= [req.body.email];
+  var query= 'DELETE FROM "Korisnik" WHERE email=?';
+  client.execute(query,params, function(err,result){
+  if(!err){
+    res.json("Nalog uspesno obrisan.");
+  }
+  })
+})
+
+app.get('/vratiStanje', function(req,res){ //ovo se poziva pre uplate kombinacije i ako je false onda ne moze da se uplati
+  var query= 'SELECT stanje FROM "Kolo" limit 1';
+  client.execute(query,function(err,result){
+    if(result.rows[0].stanje=="otvoreno")
+      res.json(true);
+    else
+      res.json(false);
+  })
+})
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);

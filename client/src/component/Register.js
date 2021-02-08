@@ -47,10 +47,10 @@ const Register = () => {
     if (password !== password2) {
       swal('Lozinke se ne poklapaju');
     } else {
-      if (!allLetter(username)) {
-        swal('Opseg vrednosti username-a mora biti: a-z');
-        return;
-      }
+      // if (!allLetter(username)) {
+      //   swal('Opseg vrednosti username-a mora biti: a-z');
+      //   return;
+      // }
 
       swal('Uspesno ste registrovani', {
         icon: 'success',
@@ -85,7 +85,7 @@ const Register = () => {
         <h2>
           Registracija <i className='fas fa-dice fa-fw'></i>
         </h2>
-        <div className='form-control'>
+        {/* <div className='form-control'>
           <label for='username'>Username</label>
           <input
             type='text'
@@ -95,7 +95,7 @@ const Register = () => {
             onChange={onChange}
             required
           />
-        </div>
+        </div> */}
         <div className='form-control'>
           <label for='email'>Email</label>
           <input
