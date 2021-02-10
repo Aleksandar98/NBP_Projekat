@@ -1,6 +1,5 @@
 import React, { Fragment, useState, useEffect } from 'react';
 import swal from 'sweetalert';
-//import { Link } from 'react-router-dom';
 import axios from 'axios';
 import StripeCheckout from 'react-stripe-checkout';
 import { Link, Redirect, useHistory } from 'react-router-dom';
