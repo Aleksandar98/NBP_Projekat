@@ -9,15 +9,15 @@
 body {
   font-family: 'Poppins', sans-serif;
   font-size: 1rem;
-  line-height: 1.6;
+  line-height: 1.5;
   background-color: rgb(248, 248, 248);
   color: #333;
 }
 
 .flex-container {
   margin-top: 1%;
-  height: 600px;
-  padding: 20px;
+  /* height: 600px; */
+  padding: 10px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -35,7 +35,7 @@ body {
   display: flex;
   justify-content: space-evenly;
   margin-top: 15px;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   width: 100%;
 }
 
@@ -55,7 +55,7 @@ body {
 .desni-dole {
   display: flex;
   flex-direction: column;
-  height: 55%;
+  height: 100%;
   width: 90%;
   background-color: rgb(180, 207, 205);
   padding: 10px;
@@ -675,13 +675,123 @@ button {
   transform: rotateX(360deg) translateZ(30vw);
 }
 
-.uplata{
+.uplata {
   display: flex;
   flex-direction: row;
-  margin-top: .5rem;
+  margin-top: 0.5rem;
 }
 
 #isplata {
   max-width: 150px;
   margin-left: 670px;
+}
+
+.desni-gore h1 {
+  margin-bottom: 1px;
+}
+.brisi-nalog {
+  margin-left: 15px;
+  margin-top: 15px;
+  padding: 10px;
+  background: #282c34;
+  text-decoration: none;
+  color: #fff;
+}
+
+.brisi-nalog:hover {
+  color: red;
+  text-decoration: none;
+}
+.klasa8 {
+  text-align: center;
+  padding-top: 200px;
+  color: #30588e;
+  font-weight: 700;
+  font-size: 60px;
+}
+
+#sekcija {
+  background: url('./img/loto.jpg') no-repeat center center/cover;
+  color: #fff;
+  height: 100vh;
+  text-align: center;
+}
+#sekcija a {
+  cursor: pointer;
+  padding: 14px;
+  margin-right: 320px;
+  background: cadetblue;
+  border: none;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  text-decoration: none;
+  color: #111;
+  border-radius: 5px;
+  position: relative;
+  animation: animacija1 3s forwards;
+  animation-timing-function: linear;
+}
+@keyframes animacija1 {
+  from {
+    left: 0px;
+  }
+  to {
+    left: 310px;
+  }
+}
+#sekcija h1 {
+  padding-top: 150px;
+  margin-bottom: 20px;
+  font-size: 2.5rem;
+}
+#sekcija p {
+  margin-bottom: 40px;
+  font-size: 1.2rem;
+}
+.live {
+  cursor: pointer;
+  padding: 13px;
+  margin-right: 300px;
+  background: cadetblue;
+  border: none;
+  outline: none;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 600;
+  position: relative;
+  left: 17px;
+  border-radius: 5px;
+  animation-name: animacija2;
+  animation-duration: 3s;
+  animation-fill-mode: forwards;
+}
+@keyframes animacija2 {
+  from {
+    top: 240px;
+  }
+  to {
+    top: 0px;
+  }
+}
+
+.lotooo {
+  width: 300px;
+  margin: auto;
+  margin-top: 20px;
+}
+.lotooo button {
+  display: block;
+  width: 200px;
+  margin-top: 20px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+.lotooo1 {
+  margin: auto;
+  color: red;
+  cursor: pointer;
+}
+.lotooo1 button {
+  cursor: pointer;
 }

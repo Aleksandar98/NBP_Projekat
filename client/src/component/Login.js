@@ -23,17 +23,21 @@ const Login = () => {
       password,
     };
     try {
-      const res = await axios.post("http://localhost:5000/provera", zaSlanje);
-      console.log(res.data);
-      if(res.data==false){
-        swal("Greska", "Unesite validne podatke", "error");
+      if (email === 'admin@gmail.com' && password === 'sifra') {
+        history.push('/statistika');
         return;
       }
-      localStorage.setItem("username", res.data.username);
-      localStorage.setItem("kredit", res.data.kredit);
-      localStorage.setItem("email", res.data.email);
-      localStorage.setItem("password", res.data.password);
-      history.push("/profile");
+      const res = await axios.post('http://localhost:5000/provera', zaSlanje);
+      console.log(res.data);
+      if (res.data == false) {
+        swal('Greska', 'Unesite validne podatke', 'error');
+        return;
+      }
+      localStorage.setItem('username', res.data.username);
+      localStorage.setItem('kredit', res.data.kredit);
+      localStorage.setItem('email', res.data.email);
+      localStorage.setItem('password', res.data.password);
+      history.push('/profile');
     } catch (err) {
       console.log(err);
     }

@@ -12,19 +12,6 @@ import { curveCatmullRom, area } from 'd3-shape';
 import { scalePoint } from 'd3-scale';
 import axios from 'axios';
 
-let data = [
-  { kolo: "1", novac_koji_firma_primi: 1000, isplate_korisnicima: 1500 },
-  { kolo: "2", novac_koji_firma_primi: 4200, isplate_korisnicima: 1100 },
-  { kolo: "3", novac_koji_firma_primi: 5354, isplate_korisnicima: 1200 },
-  { kolo: "4", novac_koji_firma_primi: 3900, isplate_korisnicima: 1150 },
-  { kolo: "5", novac_koji_firma_primi: 9105, isplate_korisnicima: 2500 },
-  { kolo: "6", novac_koji_firma_primi: 4180, isplate_korisnicima: 2250 },
-  { kolo: "7", novac_koji_firma_primi: 8110, isplate_korisnicima: 1600 },
-  { kolo: "8", novac_koji_firma_primi: 2554, isplate_korisnicima: 2200 },
-  { kolo: "9", novac_koji_firma_primi: 888, isplate_korisnicima: 2560 },
-  // { kolo: "10", novac_koji_firma_primi: 14270, isplate_korisnicima: 1130 },
-];
-
 const Root = (props) => <Legend.Root {...props} className='m-auto flex-row' />;
 
 const Area = (props) => (
@@ -37,112 +24,103 @@ const Area = (props) => (
       .curve(curveCatmullRom)}
   />
 );
-
-const isplati = () => {
-  axios.post('/izvrsiIsplatu');
-}
-
 export default class Statistika extends React.PureComponent {
   constructor(props) {
     super(props);
+
     this.state = {
       data: [],
+      vrednost: '',
     };
   }
 
+  async okini() {
+    if (this.state.vrednost <= 0) this.state.vrednost = 5000;
+    const res = await axios.put('http://localhost:5000/vrednostSedmice', {
+      vrednostSedmice: this.state.vrednost,
+    });
+    console.log(res.data);
+  }
+
   componentDidMount() {
-    fetch("http://localhost:5000/izracunajProfit")
+    fetch('http://localhost:5000/vratiStatistiku', {
+      method: 'GET',
+    })
       .then((res) => res.json())
-      .then(
-        (result) => {
-          let podaci = [
-            {
-              kolo: "1",
-              novac_koji_firma_primi: 1000,
-              isplate_korisnicima: 1500,
-            },
-            {
-              kolo: "2",
-              novac_koji_firma_primi: 4200,
-              isplate_korisnicima: 1100,
-            },
-            {
-              kolo: "3",
-              novac_koji_firma_primi: 5354,
-              isplate_korisnicima: 1200,
-            },
-            {
-              kolo: "4",
-              novac_koji_firma_primi: 3900,
-              isplate_korisnicima: 1150,
-            },
-            {
-              kolo: "5",
-              novac_koji_firma_primi: 9105,
-              isplate_korisnicima: 2500,
-            },
-            {
-              kolo: "6",
-              novac_koji_firma_primi: 4180,
-              isplate_korisnicima: 2250,
-            },
-            {
-              kolo: "7",
-              novac_koji_firma_primi: 8110,
-              isplate_korisnicima: 1600,
-            },
-            {
-              kolo: "8",
-              novac_koji_firma_primi: 2554,
-              isplate_korisnicima: 2200,
-            },
-            {
-              kolo: "9",
-              novac_koji_firma_primi: 888,
-              isplate_korisnicima: 2560,
-            },
-          ];
-          podaci.push({
-            kolo: "10",
-            novac_koji_firma_primi: result[0],
-            isplate_korisnicima: result[1],
-          });
-          this.setState({ data: podaci });
-        },
-        (error) => {
-          console.log(error);
-        }
-      );
+      .then((podaci) => {
+        const data = podaci;
+        data.forEach((obj) => {
+          obj.isplata = parseInt(obj.isplata);
+          obj.uplaceno = parseInt(obj.uplaceno);
+        });
+        data.sort(function (a, b) {
+          return a.idkola - b.idkola;
+        });
+        this.setState({ ...this.state, data });
+      })
+      .catch((err) => {
+        console.error(err);
+      });
   }
 
   render() {
     const { data: chartData } = this.state;
 
-    return (
-      <div className="card">
-        <Chart data={chartData} className="pr-3">
+    return !this.state.data[0] ? (
+      <div className='lotoo'>
+        <h1 className='klasa8'>Ne postoje podaci ni za jedno kolo u bazi</h1>
+        <div className='lotooo'>
+          <label for='unos'>Unesi vrednost sedmice</label>
+          <input
+            type='number'
+            value={this.state.vrednost}
+            onChange={(e) =>
+              this.setState({ ...this.state, vrednost: e.target.value })
+            }
+          />
+          <button type='submit' onClick={() => this.okini()}>
+            Submit
+          </button>
+        </div>
+      </div>
+    ) : (
+      <div className='card'>
+        <Chart data={chartData} className='pr-3'>
           <ArgumentScale factory={scalePoint} />
           <ArgumentAxis />
           <ValueAxis />
 
           <AreaSeries
-            name="Novac koji firma primi"
-            valueField="novac_koji_firma_primi"
-            argumentField="kolo"
+            name='Novac koji firma primi'
+            valueField='uplaceno'
+            argumentField='idkola'
             seriesComponent={Area}
           />
           <AreaSeries
-            name="Isplate korisnicima"
-            valueField="isplate_korisnicima"
-            argumentField="kolo"
+            name='Isplate korisnicima'
+            valueField='isplata'
+            argumentField='idkola'
             seriesComponent={Area}
           />
           <Animation />
-          <Legend position="bottom" rootComponent={Root} />
-          <Title text="Profit firme Loto" />
-          
+          <Legend position='bottom' rootComponent={Root} />
+          <Title text='Profit firme Loto' />
         </Chart>
-        <div onClick = {() => {isplati()}} id='isplata' className='btn btn-primary'>Isplati dobitke</div>
+        <div className='lotooo1'>
+          <label for='unos'>
+            Unesi vrednost sedmice za tekuce kolo &nbsp; &nbsp;
+          </label>
+          <input
+            type='number'
+            value={this.state.vrednost}
+            onChange={(e) =>
+              this.setState({ ...this.state, vrednost: e.target.value })
+            }
+          />
+          <button type='submit' onClick={() => this.okini()}>
+            Submit
+          </button>
+        </div>
       </div>
     );
   }
