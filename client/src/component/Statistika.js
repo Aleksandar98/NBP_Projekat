@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { Link } from 'react-router-dom';
 import {
   Chart,
   ArgumentAxis,
@@ -11,6 +12,7 @@ import { ArgumentScale, Animation } from '@devexpress/dx-react-chart';
 import { curveCatmullRom, area } from 'd3-shape';
 import { scalePoint } from 'd3-scale';
 import axios from 'axios';
+import swal from 'sweetalert';
 
 const Root = (props) => <Legend.Root {...props} className='m-auto flex-row' />;
 
@@ -39,7 +41,7 @@ export default class Statistika extends React.PureComponent {
     const res = await axios.put('http://localhost:5000/vrednostSedmice', {
       vrednostSedmice: this.state.vrednost,
     });
-    console.log(res.data);
+    swal('Uspesno azurirana vrednost sedmice!');
   }
 
   componentDidMount() {

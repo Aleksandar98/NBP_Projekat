@@ -1,5 +1,5 @@
-import React, { Component } from "react";
-import PropTypes from "prop-types";
+import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import swal from 'sweetalert';
 class Countdown extends Component {
   constructor(props) {
@@ -15,16 +15,16 @@ class Countdown extends Component {
 
   componentDidMount() {
     // update every second
-    fetch("http://localhost:5000/vratiPocetakKola")
+    fetch('http://localhost:5000/vratiPocetakKola')
       .then((res) => res.json())
       .then(
         (result) => {
           // this.setState({kombinacija: result})
           console.log(result);
-          if(result==false){
-            swal("Trenutno sistem nije u funkciji, pokusajte uskoro ponovo!");
+          if (result == false) {
+            swal('Trenutno sistem nije u funkciji, pokusajte uskoro ponovo!');
             return;
-          } 
+          }
           this.interval = setInterval(() => {
             const date = this.calculateCountdown(result);
             date ? this.setState(date) : this.stop();
@@ -44,7 +44,7 @@ class Countdown extends Component {
       );
   }
 
-  componentWillUnmount() { 
+  componentWillUnmount() {
     this.stop();
   }
 
@@ -84,7 +84,6 @@ class Countdown extends Component {
       diff -= timeLeft.min * 60;
     }
     timeLeft.sec = diff;
-    console.log("KOLKO CEKAM" + timeLeft.sec);
     return timeLeft;
   }
 
@@ -92,13 +91,13 @@ class Countdown extends Component {
     clearInterval(this.interval);
     //UPDEJTRUJ STATE DA PRIKAZE IZVLACENJE
     this.props.onIstekao();
-    console.log("PRIKAZI IZVLACENJE");
+    console.log('PRIKAZI IZVLACENJE');
   }
 
   addLeadingZeros(value) {
     value = String(value);
     while (value.length < 2) {
-      value = "0" + value;
+      value = '0' + value;
     }
     return value;
   }
@@ -107,30 +106,30 @@ class Countdown extends Component {
     const countDown = this.state;
 
     return (
-      <div className="Countdown">
-        <span className="Countdown-col">
-          <span className="Countdown-col-element">
+      <div className='Countdown'>
+        <span className='Countdown-col'>
+          <span className='Countdown-col-element'>
             <strong>{this.addLeadingZeros(countDown.days)}</strong>
-            <span>{countDown.days === 1 ? "Day" : "Days"}</span>
+            <span>{countDown.days === 1 ? 'Day' : 'Days'}</span>
           </span>
         </span>
 
-        <span className="Countdown-col">
-          <span className="Countdown-col-element">
+        <span className='Countdown-col'>
+          <span className='Countdown-col-element'>
             <strong>{this.addLeadingZeros(countDown.hours)}</strong>
             <span>Hours</span>
           </span>
         </span>
 
-        <span className="Countdown-col">
-          <span className="Countdown-col-element">
+        <span className='Countdown-col'>
+          <span className='Countdown-col-element'>
             <strong>{this.addLeadingZeros(countDown.min)}</strong>
             <span>Min</span>
           </span>
         </span>
 
-        <span className="Countdown-col">
-          <span className="Countdown-col-element">
+        <span className='Countdown-col'>
+          <span className='Countdown-col-element'>
             <strong>{this.addLeadingZeros(countDown.sec)}</strong>
             <span>Sec</span>
           </span>

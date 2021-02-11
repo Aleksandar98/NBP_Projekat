@@ -8,6 +8,7 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 var _ = require('lodash');
+const { result } = require('lodash');
 const stripe = require('stripe')('sk_test_sUstB2DOxltM0BQWQileYGJH00sj8TZfzI');
 
 app.use(cors());
@@ -452,7 +453,7 @@ function shuffle(array) {
 }
 
 //Izvlaci dobitnu kombinaciju za tekuce kola
-cron.schedule('00 11 23 * * Wed', async function () {
+cron.schedule('00 43 22 * * Thu', async function () {
   var query0 = 'SELECT COUNT(*) FROM "Kolo"';
   await client.execute(query0, async function (err, result) {
     if (parseInt(result.first()['count']) == 0) return;
@@ -936,5 +937,12 @@ app.get('/kombinacijeUsera/:username', (req, res) => {
   });
 });
 
+app.get('/vratiVrednostSedmice', (req, res) => {
+  let query = 'SELECT vrednostsedmice FROM "Kolo" limit 1';
+  client.execute(query, (err, result) => {
+    if (result.rows == undefined) return;
+    res.json(result.rows[0]['vrednostsedmice']);
+  });
+});
 const PORT = process.env.PORT || 5000;
 app.listen(PORT);

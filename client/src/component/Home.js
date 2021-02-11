@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Countdown from './Countdown';
 import Drum from './Drum';
 import BasicTable from './BasicTable';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 
 export default function Home() {
-
   //Istekao tajmer
   const [count, setCount] = React.useState(0);
   const increment = () => setCount((c) => (c = 1));
@@ -14,10 +14,16 @@ export default function Home() {
   const [temp, setTemp] = React.useState(0);
   const increment2 = () => setTemp((c) => (c = 1));
 
+  const [vrednostSedmice, setVrednostSedmice] = useState('');
+
+  useEffect(async () => {
+    const res = await axios.get('/vratiVrednostSedmice');
+    setVrednostSedmice(res.data);
+  }, []);
+
   return (
     <div className='App'>
-       <nav className='navbar navbar-dark bg-dark justify-content-between'>
-       
+      <nav className='navbar navbar-dark bg-dark justify-content-between'>
         <a className='navbar-brand' href='#'>
           Dobrodosli <i class='fas fa-dice fa-fw'></i>
         </a>
