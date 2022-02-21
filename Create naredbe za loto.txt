@@ -1,0 +1,69 @@
+CREATE TABLE "Korisnik" (
+    email text,
+    password text,
+    username text,
+    ime text,
+    prezime text,
+    mesto text,
+    racun text,
+    telefon text,
+    PRIMARY KEY (email, password)
+)                                                                       
+
+CREATE TABLE "Kolo" (
+    idkola text,
+    datum text,
+    vrednostsedmice text,
+    stanje text,
+dobitnakombinacija text,
+    PRIMARY KEY (idkola)
+)
+                         
+CREATE TABLE "Firma" (
+    ime text,
+    brregistrovanih text,
+    profit text,
+    PRIMARY KEY (ime)
+)
+                    
+CREATE TABLE "Kombinacija_By_Kolo" (
+    idkola text,
+      PRIMARY KEY (idkola)
+
+)
+CREATE TABLE "BrojKombinacija_By_Kolo"(
+ idkola text,
+ PRIMARY KEY(idkola)
+)  
+
+CREATE TABLE "Dobitak_By_Kolo" (
+    idkola text,                     
+    idkorisnika text,
+    dobitak text, 
+    PRIMARY KEY (idkola, idkorisnika)
+)
+          
+INSERT INTO "Kolo"(idkola, datum, vrednostsedmice, stanje) values ('1', '2020-12-29', '545452', 'otvoreno')
+  INSERT INTO "Korisnik"(email, password, username, ime, prezime, mesto, racun, telefon) values ('miloss@gmail.com', 'sifra', 'misa', 'Milos', 'Mitic', 'Nis', '32234332', '0657660034')
+  SELECT * FROM "Kolo"  
+  SELECT * FROM "Korisnik"
+  
+  DELETE FROM "Kolo"  
+  DELETE FROM "Kolo" WHERE idkola='1'          
+  SELECT * FROM "Korisnik" WHERE email= 'u.mm@gmail.com' AND password='sifra'    
+  UPDATE "Kolo" SET stanje='zatvoreno' WHERE idkola= '1'                                                   
+                                                                              
+ALTER TABLE "Kombinacija_By_Kolo" ADD uross text                                             
+UPDATE "Kombinacija_By_Kolo" SET abcgmailcom='2 4 7 8 11 22 37'  WHERE idkola='1'   
+INSERT INTO "Kombinacija_By_Kolo"(idkola) VALUES ('1')     
+                                                                                               
+INSERT INTO "BrojKombinacija_By_Kolo"(idkola) VALUES ('1')
+SELECT * FROM "Kombinacija_By_Kolo"
+SELECT * FROM "BrojKombinacija_By_Kolo"                  
+ALTER TABLE "BrojKombinacija_By_Kolo" ADD urke text
+UPDATE "BrojKombinacija_By_Kolo" SET urke='1'  WHERE idkola='1'
+
+DROP TABLE "Kolo"  
+ SELECT COUNT(*) FROM "Kolo"
+ UPDATE "Kolo" SET vrednostsedmice='110000' WHERE idkola='1'
+ select idkola from "Kolo" limit 1    
